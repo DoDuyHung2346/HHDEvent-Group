@@ -16,6 +16,15 @@ BOOKING_REGEX = re.compile(r"(đặt\s+lịch|hẹn\s+(?:gặp|tư\s+vấn)|book
 HANDOFF_REGEX = re.compile(r"(gọi\s+hotline|số\s+điện\s+thoại|nói\s+chuyện\s+trực\s+tiếp|gặp\s+(?:nhân\s+viên|người)|tư\s+vấn\s+viên)", re.IGNORECASE)
 OOS_REGEX = re.compile(r"(thời\s+tiết|giải\s+toán|chứng\s+khoán|bài\s+thơ|viết\s+code)", re.IGNORECASE)
 
+def infer_event_intent(message: str) -> AnalyzeOut:
+    """Deterministic fallback for a real event question, independent of old chat history."""
+    lower = message.lower()
+    if any(k in lower for k in ["giá", "chi phí", "bao nhiêu", "báo giá", "gói"]):
+        return AnalyzeOut(intent="pricing", standalone_query=message, doc_type_hint="package")
+    if any(k in lower for k in ["hủy", "hoàn tiền", "đặt cọc", "quy định", "chính sách"]):
+        return AnalyzeOut(intent="policy", standalone_query=message, doc_type_hint="policy")
+    return AnalyzeOut(intent="faq", standalone_query=message, doc_type_hint=None)
+
 def analyze_query(message: str, history: List[ChatMessage] = None) -> AnalyzeOut:
     msg_clean = message.strip()
     words = msg_clean.split()
@@ -35,19 +44,7 @@ def analyze_query(message: str, history: List[ChatMessage] = None) -> AnalyzeOut
 
     # Nếu không có history và câu tương đối rõ ràng
     if not history and len(words) >= 4:
-        # Tự suy luận doc_type_hint đơn giản
-        lower = msg_clean.lower()
-        hint = None
-        intent = "faq"
-        if any(k in lower for k in ["giá", "chi phí", "bao nhiêu", "báo giá", "gói"]):
-            hint = "package"
-            intent = "pricing"
-        elif any(k in lower for k in ["hủy", "hoàn tiền", "đặt cọc", "quy định", "chính sách"]):
-            hint = "policy"
-            intent = "policy"
-        elif any(k in lower for k in ["mưa", "tình huống", "xử lý"]):
-            hint = "scenario"
-        return AnalyzeOut(intent=intent, standalone_query=msg_clean, doc_type_hint=hint)
+        return infer_event_intent(msg_clean)
 
     # Nếu có history hoặc câu ngắn/mơ hồ -> gọi LLM
     try:
@@ -64,6 +61,11 @@ def analyze_query(message: str, history: List[ChatMessage] = None) -> AnalyzeOut
             response_schema=AnalyzeOut,
             temperature=0.1
         )
+        # Lịch sử thường có một dòng xác nhận đã đặt lịch. Nó không được phép
+        # biến mọi câu hỏi sau đó thành intent "booking". Chỉ chính câu hiện
+        # tại có từ khóa đặt lịch mới được mở form.
+        if out.intent == "booking" and not BOOKING_REGEX.search(msg_clean):
+            return infer_event_intent(msg_clean)
         return out
     except Exception:
         # Fallback an toàn

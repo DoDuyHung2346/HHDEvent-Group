@@ -204,7 +204,7 @@ export default function InChatBookingCard({
         {/* Date Selector */}
         <div>
           <label className="block font-semibold text-slate-800 mb-1.5 flex items-center justify-between">
-            <span>1. Chọn ngày tư vấn (Từ ngày mai, T2 - T7)</span>
+            <span>1. Chọn ngày tư vấn (từ ngày mai)</span>
             <span className="text-[11px] text-indigo-600 font-normal">Tối đa 2 lịch / khung giờ</span>
           </label>
           <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide py-1">
@@ -232,6 +232,16 @@ export default function InChatBookingCard({
               })
             )}
           </div>
+          <label className="mt-2 flex items-center gap-2 text-[11px] text-slate-600">
+            <span>Hoặc chọn ngày khác:</span>
+            <input
+              type="date"
+              min={availableDays[0]}
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-800"
+            />
+          </label>
         </div>
 
         {/* Time Slot Selector */}

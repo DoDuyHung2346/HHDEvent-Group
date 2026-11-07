@@ -4,6 +4,7 @@ import { parseAIResponse } from "./parseResponse";
 import { getMockResponse } from "./mock";
 import type { ChatResponse, CustomerContext } from "@/lib/schemas";
 import { AI_TIMEOUT_MS } from "@/lib/constants";
+import { getAIConfig } from "./config";
 
 /**
  * Gọi AI qua OpenAI-compatible API (hoạt động với vilao.ai, OpenAI, Groq, etc.)
@@ -14,9 +15,13 @@ async function callAI(
   contextFAQs: FAQ[],
   customerContext?: CustomerContext | null
 ): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  const baseURL = process.env.AI_BASE_URL ?? "https://api.anthropic.com";
-  const model = process.env.AI_MODEL ?? "claude-haiku-4-5";
+  const { apiKey, baseURL, model, isAnthropicNative } = getAIConfig();
+  if (!apiKey) {
+    throw new Error("Chưa cấu hình LLM_API_KEY (hoặc GEMINI_API_KEY)");
+  }
+  if (!baseURL) {
+    throw new Error("Fallback trực tiếp cần LLM_BASE_URL; hãy bật RAG backend để dùng Gemini native");
+  }
   const askedQuestions = [
     ...history.filter((m) => m.role === "user").map((m) => m.content).slice(-3),
     message,
@@ -25,8 +30,6 @@ async function callAI(
   const userMessages = buildUserMessage(message, history);
 
   // Xác định endpoint: Anthropic native hay OpenAI-compatible
-  const isAnthropicNative = baseURL.includes("anthropic.com");
-
   if (isAnthropicNative) {
     // Anthropic native format
     const { default: Anthropic } = await import("@anthropic-ai/sdk");

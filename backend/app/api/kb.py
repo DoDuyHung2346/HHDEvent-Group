@@ -84,7 +84,7 @@ async def upload_document(
 
 @router.get("/documents", response_model=List[DocumentItem])
 def list_documents(db: Session = Depends(get_db)):
-    docs = db.query(DocumentModel).order_by(DocumentModel.uploaded_at.desc()).all()
+    docs = db.query(DocumentModel).filter(DocumentModel.active == 1).order_by(DocumentModel.uploaded_at.desc()).all()
     results = []
     for d in docs:
         try:
@@ -159,14 +159,23 @@ def delete_document(doc_id: str, db: Session = Depends(get_db)):
     doc = db.query(DocumentModel).filter(DocumentModel.doc_id == doc_id).first()
     if not doc:
         raise HTTPException(status_code=404, detail="Document not found")
+    if not doc.active:
+        return {"status": "ok", "message": "Tài liệu đã được xóa trước đó."}
     doc.active = 0
     doc.status = "deleted"
     db.query(ChunkModel).filter(ChunkModel.doc_id == doc_id).update({"active": 0})
     db.commit()
-    vector_store.delete_by_doc_id(doc_id)
-    rebuild_bm25_from_db(db)
-    update_kb_version(db)
-    return {"status": "ok", "message": f"Tài liệu {doc.title} đã được xóa."}
+    warnings = []
+    try:
+        vector_store.delete_by_doc_id(doc_id)
+    except Exception as exc:
+        warnings.append(f"Vector store sẽ được làm sạch khi khởi động lại: {exc}")
+    try:
+        rebuild_bm25_from_db(db)
+        update_kb_version(db)
+    except Exception as exc:
+        warnings.append(f"Chỉ mục tìm kiếm sẽ được dựng lại khi khởi động lại: {exc}")
+    return {"status": "ok", "message": f"Tài liệu {doc.title} đã được xóa.", "warnings": warnings}
 
 @router.post("/search", response_model=List[SearchResultItem])
 def search_knowledge_base(req: SearchRequest, db: Session = Depends(get_db)):

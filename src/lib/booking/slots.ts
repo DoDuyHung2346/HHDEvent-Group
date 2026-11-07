@@ -38,20 +38,19 @@ export function isWorkDay(date: Date): boolean {
 }
 
 /**
- * Lấy danh sách ngày làm việc từ ngày mai trong N ngày tới.
+ * Lấy danh sách ngày từ ngày mai trong N ngày tới. Khách có thể đặt lịch ở
+ * bất kỳ ngày tương lai nào; điều phối viên sẽ xác nhận lại lịch làm việc.
  */
 export function getAvailableWorkDays(count: number = 30): string[] {
   const dates: string[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  let d = new Date(today);
+  const d = new Date(today);
   d.setDate(d.getDate() + 1); // Từ ngày mai
 
   while (dates.length < count) {
-    if (isWorkDay(d)) {
-      dates.push(d.toISOString().split("T")[0]);
-    }
+    dates.push(d.toISOString().split("T")[0]);
     d.setDate(d.getDate() + 1);
   }
 

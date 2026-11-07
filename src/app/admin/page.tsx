@@ -37,12 +37,27 @@ import {
   type RAGDocument,
 } from "@/lib/rag/api";
 
+type AIStatus = {
+  backend?: {
+    reachable?: boolean;
+    status?: string | null;
+    error?: string;
+    embedding_config_error?: string | null;
+  };
+  fallback?: {
+    provider?: string;
+    model?: string;
+    api_key_configured?: boolean;
+  };
+  error?: string;
+};
+
 export default function AdminDashboardPage() {
   const router = useRouter();
   const { admin, isAdminLoggedIn, logoutAdminAccount, isLoaded } = useAuth();
 
-  // Tab State: analytics | crm | documents | pricing | faq | company_info
-  const [activeTab, setActiveTab] = useState<"analytics" | "crm" | "staff" | "documents" | "pricing" | "faq" | "company_info">("analytics");
+  // Tab State: analytics | crm | documents | pricing | faq | company_info | ai_test
+  const [activeTab, setActiveTab] = useState<"analytics" | "crm" | "staff" | "documents" | "pricing" | "faq" | "company_info" | "ai_test">("analytics");
 
   // CRM Bookings State
   const [bookingsList, setBookingsList] = useState<Booking[]>([]);
@@ -76,6 +91,47 @@ export default function AdminDashboardPage() {
   const [isIngestModalOpen, setIsIngestModalOpen] = useState(false);
   const [viewChunksDoc, setViewChunksDoc] = useState<{ docId: string; filename: string } | null>(null);
   const [isLoginHistoryOpen, setIsLoginHistoryOpen] = useState(false);
+
+  // AI diagnostics never contain an API key or admin token.
+  const [aiStatus, setAiStatus] = useState<AIStatus | null>(null);
+  const [aiTestResult, setAiTestResult] = useState<{ ok: boolean; source?: string; answer?: string; error?: string } | null>(null);
+  const [isCheckingAI, setIsCheckingAI] = useState(false);
+
+  const checkAIStatus = async (manageLoading = true) => {
+    if (manageLoading) setIsCheckingAI(true);
+    try {
+      const response = await fetch("/api/admin/ai-status", { cache: "no-store" });
+      const data = await response.json();
+      setAiStatus(data as AIStatus);
+    } catch {
+      setAiStatus({ error: "Không thể gọi API chẩn đoán từ frontend." });
+    } finally {
+      if (manageLoading) setIsCheckingAI(false);
+    }
+  };
+
+  const runAITest = async () => {
+    setIsCheckingAI(true);
+    setAiTestResult(null);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: "Hãy xác nhận kết nối AI bằng một câu ngắn.",
+          history: [],
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      setAiTestResult({ ok: data.source === "ai", source: data.source, answer: data.answer });
+      await checkAIStatus(false);
+    } catch (error) {
+      setAiTestResult({ ok: false, error: error instanceof Error ? error.message : "Không thể chạy bài kiểm tra." });
+    } finally {
+      setIsCheckingAI(false);
+    }
+  };
 
   // Mocked Real-time Chatbot Logs for Analytics
   const [recentBotLogs] = useState([
@@ -455,6 +511,19 @@ export default function AdminDashboardPage() {
             >
               <span className="material-symbols-outlined text-[17px]">corporate_fare</span>
               <span>Thông Tin Doanh Nghiệp</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => { setActiveTab("ai_test"); checkAIStatus(); }}
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === "ai_test"
+                  ? "bg-purple-700 text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[17px]">psychology</span>
+              <span>Kiểm Tra AI</span>
             </button>
           </div>
 
@@ -1387,6 +1456,49 @@ export default function AdminDashboardPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "ai_test" && (
+          <div className="space-y-6 animate-in fade-in duration-150">
+            <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-5">
+              <div>
+                <h3 className="font-bold text-slate-900 text-base">Kiểm Tra Kết Nối AI</h3>
+                <p className="text-xs text-slate-500 mt-1">Kiểm tra backend, cấu hình và một lượt chat thực tế. API key chỉ được báo trạng thái, không hiển thị giá trị.</p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={() => checkAIStatus()} disabled={isCheckingAI} className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-xs font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[17px]">refresh</span>{isCheckingAI ? "Đang kiểm tra..." : "Kiểm tra cấu hình"}
+                </button>
+                <button type="button" onClick={runAITest} disabled={isCheckingAI} className="px-4 py-2 rounded-xl bg-purple-700 hover:bg-purple-800 disabled:opacity-60 text-white text-xs font-bold flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[17px]">play_arrow</span>Gửi tin nhắn test
+                </button>
+              </div>
+
+              {aiStatus && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className={`p-4 rounded-xl border ${aiStatus.backend?.reachable ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+                    <p className="font-bold text-slate-800">RAG Backend</p>
+                    <p className="mt-1 text-slate-600">{aiStatus.backend?.reachable ? `Đang hoạt động (${aiStatus.backend.status || "ok"})` : aiStatus.backend?.error || "Chưa kết nối"}</p>
+                    {aiStatus.backend?.embedding_config_error && <p className="mt-2 text-amber-700">Embedding: {aiStatus.backend.embedding_config_error}</p>}
+                  </div>
+                  <div className={`p-4 rounded-xl border ${aiStatus.fallback?.api_key_configured ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+                    <p className="font-bold text-slate-800">AI Fallback</p>
+                    <p className="mt-1 text-slate-600">Provider: {aiStatus.fallback?.provider || "Không xác định"}</p>
+                    <p className="text-slate-600">Model: {aiStatus.fallback?.model || "Không xác định"}</p>
+                    <p className="mt-2 font-semibold text-slate-700">API key: {aiStatus.fallback?.api_key_configured ? "Đã cấu hình" : "Chưa cấu hình"}</p>
+                  </div>
+                </div>
+              )}
+
+              {aiTestResult && (
+                <div className={`p-4 rounded-xl border text-xs ${aiTestResult.ok ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-red-50 border-red-200 text-red-800"}`}>
+                  <p className="font-bold">{aiTestResult.ok ? "Test thành công: AI đã trả lời thật." : "Test chưa thành công: hệ thống đang dùng fallback/mock hoặc gặp lỗi."}</p>
+                  {aiTestResult.source && <p className="mt-1">Nguồn phản hồi: <span className="font-mono">{aiTestResult.source}</span></p>}
+                  {aiTestResult.error ? <p className="mt-1">Lỗi: {aiTestResult.error}</p> : <p className="mt-1 text-slate-700">Phản hồi: {aiTestResult.answer}</p>}
+                </div>
+              )}
             </div>
           </div>
         )}

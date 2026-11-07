@@ -56,9 +56,7 @@ export default function SlotPicker({
             <span>📅</span>
             <span>Chọn ngày tư vấn *</span>
           </span>
-          <span className="text-[11px] text-slate-400 font-normal">
-            (Thứ 2 – Thứ 6)
-          </span>
+          <span className="text-[11px] text-slate-400 font-normal">(Mọi ngày tương lai)</span>
         </label>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide py-1">
           {availableDays.slice(0, 14).map((day) => {
@@ -82,6 +80,16 @@ export default function SlotPicker({
               </button>
             );
           })}
+        </div>
+        <div className="mt-2 flex items-center gap-2 text-xs text-slate-300">
+          <span>Ngày khác:</span>
+          <input
+            type="date"
+            min={availableDays[0]}
+            value={selectedDate}
+            onChange={(event) => onDateChange(event.target.value)}
+            className="rounded-lg border border-white/15 bg-[#0A0F1D] px-2 py-1.5 text-slate-100"
+          />
         </div>
         {dateError && (
           <p className="text-rose-400 text-xs mt-1.5 flex items-center gap-1">

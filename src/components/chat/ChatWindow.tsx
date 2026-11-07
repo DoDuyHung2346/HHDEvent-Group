@@ -5,7 +5,7 @@ import { useChat } from "@/hooks/useChat";
 import { useCustomer } from "@/hooks/useCustomer";
 import { useAuth } from "@/hooks/useAuth";
 import { getClientUser } from "@/lib/auth/userAuth";
-import type { Booking, ChatOption, CustomerContext, QuoteSnapshot } from "@/lib/schemas";
+import type { Booking, ChatOption, CustomerContext, QuoteSnapshot, SessionMessage } from "@/lib/schemas";
 import { formatVnd } from "@/lib/quote/format";
 import { extractPrefillData } from "@/lib/quote/prefill";
 import { RequirementsFormCard } from "./quote/RequirementsFormCard";
@@ -65,6 +65,16 @@ interface ISpeechRecognition {
   onend: (() => void) | null;
   start: () => void;
   stop: () => void;
+}
+
+function restoreMessages(messages: SessionMessage[]): CustomChatMessage[] {
+  return messages.map((m) => ({
+    id: m.id,
+    sender: m.role === "user" ? "user" : "ai",
+    text: m.content,
+    time: new Date(m.timestamp).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+    type: m.messageType === "pricing" ? "pricing" : m.messageType === "booking_form" ? "booking_form" : m.messageType === "reschedule" ? "reschedule" : m.messageType === "urgent_contact" ? "urgent_contact" : "text",
+  }));
 }
 
 // Regex extraction helper cho Customer Memory (Phase 5)
@@ -154,7 +164,7 @@ export default function ChatWindow({
   }>({});
 
   // Hook Customer Memory & Session Storage
-  const { customer, saveMessage, updateMemory, initCustomer } = useCustomer(customerPhone);
+  const { customer, saveMessage, updateMemory, initCustomer, currentSession, startNewSession } = useCustomer(customerPhone);
 
   // Tạo customerContext truyền lên AI API
   const customerContext: CustomerContext | null = useMemo(() => {
@@ -197,73 +207,34 @@ export default function ChatWindow({
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
 
-  // Initial demo conversation
-  const [messages, setMessages] = useState<CustomChatMessage[]>([
-    {
-      id: "m-user-1",
-      sender: "user",
-      text: "Tôi muốn hỏi về chi phí tổ chức tiệc tri ân khách hàng 200 khách.",
-      time: "14:22 • Đã xem",
-      type: "text",
-    },
-    {
-      id: "m-ai-1",
-      sender: "ai",
-      text: "Dạ thưa Quý khách, với quy mô 200 khách cho dạ tiệc Tri ân Khách hàng (Customer Appreciation Gala), EventViet phân bổ 3 phân khúc chuẩn mực để doanh nghiệp dễ dàng cân đối ngân sách:",
-      time: "14:22",
-      type: "pricing",
-      options: [
-        {
-          id: "opt-1",
-          label: "Xem chi tiết gói Prestige",
-          action: "ask",
-          payload: "Chi tiết gói Prestige Executive 200 khách",
-        },
-        {
-          id: "opt-2",
-          label: "Đặt lịch tư vấn trực tiếp 1-1",
-          action: "open_booking",
-          payload: "Tiệc Tri ân 200 khách",
-        },
-      ],
-      relatedQuestions: [
-        "Xem mẫu kịch bản chi tiết Gala Dinner?",
-        "Ưu đãi sảnh tiệc 5 sao liên kết tại TP.HCM?",
-        "Quy trình đặt cọc và thanh toán hợp đồng?",
-      ],
-    },
-    {
-      id: "m-user-2",
-      sender: "user",
-      text: "Tôi muốn thuê phi cơ riêng và trực thăng đón khách VIP từ sân bay đến resort ngay trong đêm tiệc?",
-      time: "14:24 • Đã xem",
-      type: "text",
-    },
-    {
-      id: "m-ai-2",
-      sender: "ai",
-      text: "Hạng mục phi cơ riêng & trực thăng đón khách VIP thuộc dịch vụ Concierge đặc quyền ngoài danh mục tiêu chuẩn đại chúng. Quy trình này đòi hỏi phê duyệt đường bay từ Cục Hàng không Dân dụng, bố trí bãi đáp trực thăng tại resort và quy chuẩn an ninh hộ tống chuyên biệt.\n\nĐể chuẩn bị chu đáo, bảo mật và an toàn nhất, Quý khách có thể bấm chọn đặt lịch tư vấn 1-1 bên dưới cùng Giám đốc Điều phối sự kiện cấp cao:",
-      time: "14:24",
-      type: "text",
-      options: [
-        {
-          id: "opt-vip-book",
-          label: "📅 Đặt lịch tư vấn 1-1",
-          action: "open_booking",
-          payload: "Dịch vụ Concierge VIP & Trực thăng",
-        },
-      ],
-      relatedQuestions: [
-        "Quy trình xin phép bay sự kiện mất bao lâu?",
-        "Chi phí thuê trực thăng đón khách VIP ước tính?",
-        "Tư vấn địa điểm resort có bãi đáp trực thăng?",
-      ],
-    },
-  ]);
+  const [messages, setMessages] = useState<CustomChatMessage[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastSavedLiveMsgIdRef = useRef<string | null>(null);
+  const restoredSessionIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (user?.phone) {
+      if (user.phone !== customerPhone) setCustomerPhone(user.phone);
+      return;
+    }
+    // Không để hội thoại của tài khoản vừa đăng xuất hiển thị cho khách mới.
+    if (customerPhone) {
+      setCustomerPhone(null);
+      restoredSessionIdRef.current = null;
+      setMessages([]);
+      clearMessages();
+    }
+  }, [user?.phone, customerPhone, clearMessages]);
+
+  useEffect(() => {
+    if (!currentSession || restoredSessionIdRef.current === currentSession.id) return;
+    restoredSessionIdRef.current = currentSession.id;
+    setMessages(restoreMessages(currentSession.messages));
+    clearMessages();
+    currentSession.messages.forEach((message) => appendContext(message.role, message.content));
+  }, [currentSession, clearMessages, appendContext]);
 
   const handleUserSendMessage = useCallback(
     (textToSend?: string) => {
@@ -339,6 +310,12 @@ export default function ChatWindow({
               },
             },
           ]);
+          saveMessage({
+            role: "assistant",
+            content: responseText,
+            timestamp: new Date().toISOString(),
+            messageType: "requirements_form",
+          });
         }, 300);
         return;
       }
@@ -414,10 +391,9 @@ export default function ChatWindow({
       if (last.role === "assistant" && lastSavedLiveMsgIdRef.current !== last.id) {
         lastSavedLiveMsgIdRef.current = last.id;
         const responseData = last.response;
-        const isPricing =
-          last.content.toLowerCase().includes("báo giá") ||
-          last.content.toLowerCase().includes("chi phí") ||
-          last.content.toLowerCase().includes("ngân sách");
+        // Chỉ hiện ma trận 3 gói khi câu trả lời thực sự so sánh các gói tiệc,
+        // không dùng nó cho mọi câu hỏi có từ "chi phí" (vd. giá sân khấu/m²).
+        const isPricing = /\b(essential|signature|prestige)\b/i.test(last.content);
 
         const needsRequirements = responseData?.needs_requirements === true;
         const needsBooking = responseData?.needs_booking === true;
@@ -651,6 +627,8 @@ export default function ChatWindow({
       clearMessages();
       setMessages([]);
       setConfirmedBooking(null);
+      restoredSessionIdRef.current = null;
+      startNewSession();
     }
   };
 
@@ -776,32 +754,8 @@ export default function ChatWindow({
     }>
   ) => {
     clearMessages();
-    setMessages(
-      msgs.map((m) => {
-        const isUser = m.role === "user";
-        return {
-          id: m.id,
-          sender: isUser ? "user" : "ai",
-          text: m.content,
-          time: new Date(m.timestamp).toLocaleTimeString("vi-VN", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          type:
-            m.messageType === "pricing"
-              ? "pricing"
-              : m.messageType === "booking_form"
-              ? "booking_form"
-              : m.messageType === "booking_confirmed"
-              ? "booking_confirmed"
-              : m.messageType === "reschedule"
-              ? "reschedule"
-              : m.messageType === "urgent_contact"
-              ? "urgent_contact"
-              : "text",
-        };
-      })
-    );
+    setMessages(restoreMessages(msgs as SessionMessage[]));
+    msgs.forEach((message) => appendContext(message.role, message.content));
   };
 
   const faqInitialChips = [

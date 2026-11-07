@@ -157,5 +157,9 @@ export async function deleteRAGDocument(docId: string): Promise<boolean> {
     },
   });
 
-  return res.ok;
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Không thể xóa tài liệu (${res.status})`);
+  }
+  return true;
 }

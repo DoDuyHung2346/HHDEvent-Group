@@ -3,10 +3,11 @@ import { isRateLimited } from "@/lib/rateLimit";
 import { ChatRequestWithContextSchema } from "@/lib/schemas";
 import { retrieveWithContext } from "@/lib/kb/retrieve";
 import { generateSuggestions, refineSuggestions } from "@/lib/suggestions";
-import { getOutOfScopeResponse } from "@/lib/ai/mock";
+import { getSpecialistHandoffResponse, getUnrelatedResponse } from "@/lib/ai/mock";
 import { callAIWithFallback } from "@/lib/ai/client";
 import { RETRIEVAL_THRESHOLD, RESCHEDULE_KEYWORDS, URGENT_KEYWORDS } from "@/lib/constants";
-import { loadStaffList } from "@/lib/staff/storage";
+import { getStageEstimate } from "@/lib/quote/stageEstimate";
+import { isEventRelatedQuestion, isExplicitlyOutsideEventDomain } from "@/lib/ai/domain";
 
 const RAG_BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
 
@@ -62,6 +63,15 @@ export async function POST(req: NextRequest) {
 
   // Detect intent trước
   const intent = detectIntent(message);
+
+  // Báo giá diện tích là phép tính xác định từ bảng giá, không cần chờ LLM.
+  const stageEstimate = getStageEstimate(message, history);
+  if (stageEstimate) return NextResponse.json({ ...stageEstimate, intent: "normal" as const });
+
+  // Chỉ những yêu cầu liên quan tổ chức sự kiện mới được đi tới luồng tư vấn.
+  if (isExplicitlyOutsideEventDomain(message) || !isEventRelatedQuestion(message)) {
+    return NextResponse.json({ ...getUnrelatedResponse(), intent: "out_of_scope" as const });
+  }
 
   // Nếu là đổi lịch → trả special response
   if (intent === "reschedule") {
@@ -162,19 +172,15 @@ export async function POST(req: NextRequest) {
           ? "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp."
           : "");
 
+      // Fallback của RAG với câu hỏi vẫn thuộc lĩnh vực là một yêu cầu cần
+      // chuyên viên, không phải "ngoài phạm vi" và cũng không được bịa đáp án.
+      if (isOutOfScope) {
+        return NextResponse.json({ ...getSpecialistHandoffResponse(), intent: "out_of_scope" as const });
+      }
+
       const defaultOptions = [
-        {
-          id: "opt-1",
-          label: "📅 Đặt lịch tư vấn 1-1",
-          action: "open_booking" as const,
-          payload: "Tư vấn Tổ chức Sự kiện",
-        },
-        {
-          id: "opt-2",
-          label: "📞 Hotline 1900 6886",
-          action: "link" as const,
-          payload: "tel:19006886",
-        },
+        { id: "opt-1", label: "Tìm hiểu thêm", action: "ask" as const, payload: "Bạn có thể cho tôi biết thêm chi tiết không?" },
+        { id: "opt-2", label: "Xem dịch vụ", action: "ask" as const, payload: "EventViet cung cấp những dịch vụ gì?" },
       ];
 
       const followUps =
@@ -188,15 +194,15 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         answer,
-        options: defaultOptions,
+        options: ragData.options?.length >= 2 ? ragData.options : defaultOptions,
         related_questions: followUps,
         needs_booking: isOutOfScope,
-        matched_faq_ids: ragData.citations ? ragData.citations.map((c: any) => c.chunk_id) : [],
+        matched_faq_ids: ragData.citations ? ragData.citations.map((c: { chunk_id: string }) => c.chunk_id) : [],
         source: "ai" as const,
         intent: isOutOfScope ? ("out_of_scope" as const) : ("normal" as const),
       });
     }
-  } catch (backendErr) {
+  } catch {
     // Backend offline hoặc timeout -> Chuyển tiếp mượt sang local Knowledge Base + Fallback
   }
 
@@ -205,14 +211,11 @@ export async function POST(req: NextRequest) {
   const matchedFaqIds = topFAQs.map((r) => r.faq.id);
 
   if (topScore < RETRIEVAL_THRESHOLD) {
-    const outOfScope = getOutOfScopeResponse(matchedFaqIds);
     return NextResponse.json({
-      ...outOfScope,
-      answer:
-        "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp.",
+      ...getSpecialistHandoffResponse(),
+      matched_faq_ids: matchedFaqIds,
       related_questions: generateSuggestions({ message, history }),
-      intent: "out_of_scope",
-      needs_booking: true,
+      intent: "out_of_scope" as const,
     });
   }
 

@@ -1,6 +1,5 @@
 import type { Booking } from "@/lib/schemas";
 import {
-  WORK_DAYS,
   WORK_HOUR_START,
   WORK_HOUR_END,
   MAX_BOOKINGS_PER_SLOT,
@@ -38,7 +37,7 @@ export function validatePhone(phone: string): string | null {
 /**
  * Validate ngày đặt lịch:
  * - Phải từ ngày mai trở đi
- * - T2-T7 (không CN)
+ * - Cho phép mọi ngày trong tương lai; nhân viên sẽ xác nhận ca làm việc.
  */
 export function validateDate(dateStr: string): string | null {
   if (!dateStr) return "Vui lòng chọn ngày";
@@ -52,24 +51,14 @@ export function validateDate(dateStr: string): string | null {
   // So sánh bằng string để tránh timezone issues
   const today = new Date();
   const todayStr = today.toLocaleDateString("sv-SE"); // YYYY-MM-DD
-  const tomorrowDate = new Date(today);
-  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
-  const tomorrowStr = tomorrowDate.toLocaleDateString("sv-SE");
-
   if (dateStr <= todayStr) {
     return "Ngày đặt lịch phải từ ngày mai trở đi";
   }
 
-  // Kiểm tra ngày hợp lệ và T2-T7
+  // Kiểm tra ngày hợp lệ
   const dateObj = new Date(year, month - 1, day);
   if (dateObj.getDate() !== day) return "Ngày không hợp lệ";
   
-  // dayOfWeek: 0=CN, 1=T2, ..., 6=T7
-  const dow = dateObj.getDay();
-  if (!WORK_DAYS.includes(dow)) {
-    return "Chỉ đặt lịch vào T2–T7 (không nhận lịch Chủ nhật)";
-  }
-
   return null;
 }
 

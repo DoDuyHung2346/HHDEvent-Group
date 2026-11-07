@@ -84,8 +84,8 @@ ${contextText}
 - action "open_booking": mở form đặt lịch, payload là loại sự kiện.
 - action "open_requirements": mở form chọn concept, trang trí, âm thanh ánh sáng và xem bảng giá dự toán tức thời.
 - action "link": dùng cho liên kết bên ngoài (ít dùng).
-- Luôn có ít nhất 1 option "open_booking" để người dùng có thể đặt lịch tư vấn.
-- Khi câu trả lời liên quan chi phí/ngân sách/gói dịch vụ, LUÔN thêm 1 option action "open_requirements" (label: "Chọn yêu cầu & xem giá") và đặt "needs_requirements": true để khách chọn concept, trang trí và xem giá tham khảo. KHÔNG tự liệt kê giá từng hạng mục; giá chi tiết do form cung cấp.
+- Chỉ thêm "open_booking" khi khách yêu cầu đặt lịch, cần tư vấn riêng, hoặc thông tin đang thiếu để báo giá chính xác.
+- Chỉ thêm "open_requirements" khi khách chủ động muốn lập báo giá/cấu hình chi tiết. Không tự mở bảng giá cho các câu hỏi thông thường.
 
 ## QUY TẮC related_questions (QUAN TRỌNG):
 - Đúng 3 câu, mỗi câu là câu mà KHÁCH HÀNG có thể hỏi tiếp: ngôi khách hàng, tiếng Việt, 8–70 ký tự, kết thúc bằng "?".
