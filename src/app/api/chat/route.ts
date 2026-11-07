@@ -1,0 +1,233 @@
+import { NextRequest, NextResponse } from "next/server";
+import { isRateLimited } from "@/lib/rateLimit";
+import { ChatRequestWithContextSchema } from "@/lib/schemas";
+import { retrieveWithContext } from "@/lib/kb/retrieve";
+import { generateSuggestions, refineSuggestions } from "@/lib/suggestions";
+import { getOutOfScopeResponse } from "@/lib/ai/mock";
+import { callAIWithFallback } from "@/lib/ai/client";
+import { RETRIEVAL_THRESHOLD, RESCHEDULE_KEYWORDS, URGENT_KEYWORDS } from "@/lib/constants";
+import { loadStaffList } from "@/lib/staff/storage";
+
+const RAG_BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
+
+// Detect intent từ message
+function detectIntent(message: string): "reschedule" | "urgent" | "normal" {
+  const lower = message.toLowerCase();
+  if (RESCHEDULE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))) return "reschedule";
+  if (URGENT_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))) return "urgent";
+  return "normal";
+}
+
+export async function POST(req: NextRequest) {
+  // Rate limit
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Bạn đã gửi quá nhiều yêu cầu. Vui lòng thử lại sau 1 phút." },
+      { status: 429 }
+    );
+  }
+
+  // Parse + validate input
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Dữ liệu không hợp lệ" },
+      { status: 400 }
+    );
+  }
+
+  const parseResult = ChatRequestWithContextSchema.safeParse(body);
+  if (!parseResult.success) {
+    const firstError =
+      parseResult.error.issues?.[0]?.message ??
+      parseResult.error.message ??
+      "Dữ liệu không hợp lệ";
+    return NextResponse.json({ error: firstError }, { status: 400 });
+  }
+
+  const { message, history, customerContext, staffContext } = parseResult.data;
+  // FastAPI requires a session id for tracing/history. The original payload
+  // omitted it, causing every backend RAG call to return 422 and silently
+  // fall back to the static FAQ path.
+  const sessionId = customerContext?.phone
+    ? `customer_${customerContext.phone.replace(/\D/g, "")}`
+    : `anon_${ip.replace(/[^a-zA-Z0-9]/g, "_")}`;
+
+  // Detect intent trước
+  const intent = detectIntent(message);
+
+  // Nếu là đổi lịch → trả special response
+  if (intent === "reschedule") {
+    return NextResponse.json({
+      answer:
+        "Tôi hiểu bạn muốn đổi lịch hẹn. Vui lòng cho tôi biết số điện thoại bạn đã dùng khi đặt lịch để tôi tra cứu và hỗ trợ bạn.",
+      options: [
+        {
+          id: "provide-phone",
+          label: "Nhập số điện thoại",
+          action: "ask",
+          payload: "reschedule_lookup",
+        },
+        {
+          id: "call-hotline",
+          label: "Gọi hotline 1900 6886",
+          action: "link",
+          payload: "tel:19006886",
+        },
+      ],
+      related_questions: [
+        "Chính sách đổi lịch như thế nào?",
+        "Mất phí khi đổi lịch không?",
+        "Tôi có thể hủy lịch không?",
+      ],
+      needs_booking: false,
+      matched_faq_ids: [],
+      source: "mock" as const,
+      intent: "reschedule",
+    });
+  }
+
+  // Nếu là liên hệ gấp → trả urgent response
+  if (intent === "urgent") {
+    return NextResponse.json({
+      answer:
+        "Tôi hiểu đây là việc gấp. Để được hỗ trợ nhanh nhất, bạn có thể liên hệ trực tiếp qua các kênh sau:",
+      options: [
+        {
+          id: "call-hotline",
+          label: "Gọi ngay 1900 6886",
+          action: "link",
+          payload: "tel:19006886",
+        },
+        {
+          id: "zalo",
+          label: "Nhắn Zalo OA",
+          action: "link",
+          payload: "https://zalo.me/eventviet",
+        },
+        {
+          id: "book-urgent",
+          label: "Đặt lịch gấp",
+          action: "open_booking",
+          payload: "",
+        },
+      ],
+      related_questions: [
+        "Giờ làm việc của EventViet?",
+        "Có hỗ trợ ngoài giờ không?",
+        "Liên hệ chuyên viên qua kênh nào?",
+      ],
+      needs_booking: false,
+      matched_faq_ids: [],
+      source: "mock" as const,
+      intent: "urgent",
+    });
+  }
+
+  // 1. Thử gọi Backend RAG (Chứa toàn bộ tài liệu đã upload, Qdrant Vector + BM25s Index)
+  try {
+    const backendRes = await fetch(`${RAG_BACKEND_URL}/api/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        session_id: sessionId,
+        message,
+        history: history || [],
+        staff_context: staffContext || undefined,
+      }),
+      signal: AbortSignal.timeout(5000),
+    });
+
+    if (backendRes.ok) {
+      const ragData = await backendRes.json();
+      const isOutOfScope =
+        ragData.status === "refusal" ||
+        ragData.status === "out_of_scope" ||
+        ragData.status === "fallback" ||
+        ragData.status === "degraded" ||
+        ragData.meta?.intent === "out_of_scope";
+
+      const answer =
+        ragData.answer ||
+        (isOutOfScope
+          ? "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp."
+          : "");
+
+      const defaultOptions = [
+        {
+          id: "opt-1",
+          label: "📅 Đặt lịch tư vấn 1-1",
+          action: "open_booking" as const,
+          payload: "Tư vấn Tổ chức Sự kiện",
+        },
+        {
+          id: "opt-2",
+          label: "📞 Hotline 1900 6886",
+          action: "link" as const,
+          payload: "tel:19006886",
+        },
+      ];
+
+      const followUps =
+        ragData.follow_ups && ragData.follow_ups.length >= 3
+          ? ([ragData.follow_ups[0], ragData.follow_ups[1], ragData.follow_ups[2]] as [
+              string,
+              string,
+              string
+            ])
+          : generateSuggestions({ message, history });
+
+      return NextResponse.json({
+        answer,
+        options: defaultOptions,
+        related_questions: followUps,
+        needs_booking: isOutOfScope,
+        matched_faq_ids: ragData.citations ? ragData.citations.map((c: any) => c.chunk_id) : [],
+        source: "ai" as const,
+        intent: isOutOfScope ? ("out_of_scope" as const) : ("normal" as const),
+      });
+    }
+  } catch (backendErr) {
+    // Backend offline hoặc timeout -> Chuyển tiếp mượt sang local Knowledge Base + Fallback
+  }
+
+  // 2. Fallback nội bộ: retrieve có ngữ cảnh từ kho FAQ tĩnh
+  const { results: topFAQs, score: topScore } = retrieveWithContext(message, history);
+  const matchedFaqIds = topFAQs.map((r) => r.faq.id);
+
+  if (topScore < RETRIEVAL_THRESHOLD) {
+    const outOfScope = getOutOfScopeResponse(matchedFaqIds);
+    return NextResponse.json({
+      ...outOfScope,
+      answer:
+        "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp.",
+      related_questions: generateSuggestions({ message, history }),
+      intent: "out_of_scope",
+      needs_booking: true,
+    });
+  }
+
+  const contextFAQs = topFAQs.map((r) => r.faq);
+  const response = await callAIWithFallback(
+    message,
+    history,
+    contextFAQs,
+    matchedFaqIds,
+    customerContext ?? null
+  );
+
+  return NextResponse.json({
+    ...response,
+    related_questions: refineSuggestions(response.related_questions, { message, history }),
+    intent: "normal",
+  });
+}
