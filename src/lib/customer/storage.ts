@@ -256,7 +256,7 @@ export function getCustomerSessions(phone: string): ChatSession[] {
 export function createSession(phone: string): ChatSession {
   const normalized = phone.trim();
   const now = new Date().toISOString();
-  const sessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  const sessionId = crypto.randomUUID();
 
   const newSession: ChatSession = {
     id: sessionId,

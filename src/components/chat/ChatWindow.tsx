@@ -8,6 +8,10 @@ import { getClientUser } from "@/lib/auth/userAuth";
 import type { Booking, ChatOption, CustomerContext, QuoteSnapshot, SessionMessage } from "@/lib/schemas";
 import { formatVnd } from "@/lib/quote/format";
 import { extractPrefillData } from "@/lib/quote/prefill";
+import { isRescheduleRequest, rescheduleLatestBooking } from "@/lib/booking/reschedule";
+import { isSchedulingRequest } from "@/lib/ai/domain";
+import { isBookingStatusRequest } from "@/lib/ai/domain";
+import { fetchBookings } from "@/lib/booking/api";
 import { RequirementsFormCard } from "./quote/RequirementsFormCard";
 import { QuoteSummaryCard } from "./quote/QuoteSummaryCard";
 import PricingComparisonCard from "./PricingComparisonCard";
@@ -213,6 +217,7 @@ export default function ChatWindow({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastSavedLiveMsgIdRef = useRef<string | null>(null);
   const restoredSessionIdRef = useRef<string | null>(null);
+  const chatLoginStorageKey = "eventviet_chat_login_user_id";
 
   useEffect(() => {
     if (user?.phone) {
@@ -228,6 +233,27 @@ export default function ChatWindow({
     }
   }, [user?.phone, customerPhone, clearMessages]);
 
+  // Một lần đăng nhập tạo một phiên chat mới hoàn toàn. ChatWindow luôn được
+  // mount khi đổi tab, nên marker theo user id giúp giữ nguyên chat trong cùng
+  // lần đăng nhập thay vì làm mới mỗi lần chuyển tab.
+  useEffect(() => {
+    if (!user?.id || !user.phone || customerPhone !== user.phone) return;
+    if (sessionStorage.getItem(chatLoginStorageKey) === user.id) return;
+
+    sessionStorage.setItem(chatLoginStorageKey, user.id);
+    const newSession = startNewSession();
+    if (!newSession) return;
+
+    const greeting = "Xin chào! Em là trợ lý AI của EventViet. Em có thể tư vấn tổ chức sự kiện, lựa chọn dịch vụ và dự toán chi phí. Anh/chị đang quan tâm đến loại sự kiện nào ạ?";
+    queueMicrotask(() => {
+      restoredSessionIdRef.current = null;
+      clearMessages();
+      setMessages([{ id: `ai-welcome-${Date.now()}`, sender: "ai", text: greeting, time: "Vừa xong", type: "text" }]);
+      appendContext("assistant", greeting);
+      saveMessage({ role: "assistant", content: greeting, timestamp: new Date().toISOString(), messageType: "text" }, newSession.id);
+    });
+  }, [user?.id, user?.phone, customerPhone, startNewSession, clearMessages, appendContext, saveMessage]);
+
   useEffect(() => {
     if (!currentSession || restoredSessionIdRef.current === currentSession.id) return;
     restoredSessionIdRef.current = currentSession.id;
@@ -237,7 +263,7 @@ export default function ChatWindow({
   }, [currentSession, clearMessages, appendContext]);
 
   const handleUserSendMessage = useCallback(
-    (textToSend?: string) => {
+    async (textToSend?: string) => {
       const text = (textToSend ?? inputVal).trim();
       if (!text) return;
 
@@ -282,6 +308,66 @@ export default function ChatWindow({
         initCustomer(extracted.phone, updatedMemory);
       } else if (detectedPhone) {
         updateMemory(updatedMemory);
+      }
+
+      if (isBookingStatusRequest(text)) {
+        let matchingBookings: Booking[] = [];
+        if (detectedPhone) {
+          try {
+            matchingBookings = await fetchBookings({ phone: detectedPhone });
+          } catch {
+            matchingBookings = [];
+          }
+        }
+        const latest = matchingBookings[0];
+        const responseText = latest
+          ? `Lịch hẹn gần nhất #${latest.id}: ${latest.time} ngày ${latest.date}. Trạng thái hiện tại: ${latest.status === "pending" ? "đang chờ xử lý" : "đã hoàn tất"}.`
+          : "Mình chưa tìm thấy lịch hẹn theo số điện thoại hiện tại. Bạn có thể kiểm tra lại số điện thoại hoặc đặt một lịch tư vấn mới.";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai-booking-status-${Date.now()}`,
+            sender: "ai",
+            text: responseText,
+            time: nowTime,
+            type: "text",
+          },
+        ]);
+        saveMessage({
+          role: "assistant",
+          content: responseText,
+          timestamp: new Date().toISOString(),
+          messageType: "text",
+        });
+        return;
+      }
+
+      // Đổi lịch bằng ngôn ngữ tự nhiên: cập nhật ngay khi câu có đủ ngày,
+      // giờ, đúng số điện thoại và slot vẫn còn chỗ. Nếu không, mở form đổi
+      // lịch để khách tự chọn thay vì tạo một lịch hẹn mới.
+      if (isRescheduleRequest(text)) {
+        const result = await rescheduleLatestBooking(detectedPhone, text);
+        const responseText = result.status === "updated"
+          ? `Đã đổi lịch hẹn #${result.booking.id} sang ${result.booking.time} ngày ${result.booking.date}. Chuyên viên sẽ tiếp tục theo lịch mới này.`
+          : `${result.reason} Bạn vui lòng chọn lại trong biểu mẫu đổi lịch bên dưới.`;
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `ai-reschedule-${Date.now()}`,
+            sender: "ai",
+            text: responseText,
+            time: nowTime,
+            type: result.status === "updated" ? "text" : "reschedule",
+            intent: "reschedule",
+          },
+        ]);
+        saveMessage({
+          role: "assistant",
+          content: responseText,
+          timestamp: new Date().toISOString(),
+          messageType: result.status === "updated" ? "text" : "reschedule",
+        });
+        return;
       }
 
       // Kiểm tra yêu cầu chọn concept / báo giá chi tiết trực tiếp
@@ -398,6 +484,11 @@ export default function ChatWindow({
         const needsRequirements = responseData?.needs_requirements === true;
         const needsBooking = responseData?.needs_booking === true;
         const intent = responseData?.intent;
+        const lastUserMessage = [...liveMessages].reverse().find((message) => message.role === "user")?.content ?? "";
+        const inferredPrefill = extractPrefillData(lastUserMessage);
+        const shouldOpenBookingForm = needsBooking && (
+          isSchedulingRequest(lastUserMessage) || responseData?.show_booking_form === true
+        );
 
         // Định dạng loại component render tương ứng:
         // Mặc định hiển thị text thông thường (hoặc pricing/reschedule/urgent/requirements)
@@ -409,6 +500,8 @@ export default function ChatWindow({
             ? "urgent_contact"
             : needsRequirements
             ? "requirements_form"
+            : shouldOpenBookingForm
+            ? "booking_form"
             : isPricing
             ? "pricing"
             : "text";
@@ -435,7 +528,10 @@ export default function ChatWindow({
               minute: "2-digit",
             }),
             type: messageType,
-            prefill: responseData?.prefill,
+            prefill: responseData?.prefill ?? {
+              guestCount: inferredPrefill.guestCount,
+              concept: inferredPrefill.conceptId,
+            },
             options: responseOptions.length > 0 ? responseOptions : responseData?.options,
             relatedQuestions: responseData?.related_questions,
             needsBooking,
@@ -619,6 +715,16 @@ export default function ChatWindow({
       content: `Lịch hẹn tư vấn 1-1 thành công: Ngày ${booking.date} lúc ${booking.time}. Mã phiếu: #${booking.id}`,
       timestamp: new Date().toISOString(),
       messageType: "booking_confirmed",
+    });
+  };
+
+  const handleRescheduleSuccess = (booking: Booking) => {
+    setConfirmedBooking(booking);
+    saveMessage({
+      role: "assistant",
+      content: `Đã đổi lịch hẹn #${booking.id} sang ${booking.time} ngày ${booking.date}.`,
+      timestamp: new Date().toISOString(),
+      messageType: "reschedule",
     });
   };
 
@@ -972,7 +1078,7 @@ export default function ChatWindow({
                     {msg.type === "reschedule" && (
                       <RescheduleCard
                         initialPhone={customerPhone ?? undefined}
-                        onRescheduled={(updated) => handleBookingSuccess(updated)}
+                        onRescheduled={handleRescheduleSuccess}
                       />
                     )}
 

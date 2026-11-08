@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import ChatWindow from "@/components/chat/ChatWindow";
 import HelpSidebar from "@/components/chat/HelpSidebar";
-import { loadBookings, saveBookings } from "@/lib/booking/storage";
+import { cancelRemoteBooking, fetchBookings } from "@/lib/booking/api";
 import type { Booking } from "@/lib/schemas";
 import { generateIcsFile } from "@/lib/calendar/generateIcs";
 import { loadPricingConfig, type PackagePricingConfig } from "@/lib/services/packageStorage";
@@ -48,7 +48,13 @@ export default function CustomerDashboardPage() {
   const [applyAiSurcharge, setApplyAiSurcharge] = useState(true);
 
   useEffect(() => {
-    setBookings(loadBookings().bookings);
+    if (user?.phone) {
+      fetchBookings({ phone: user.phone })
+        .then(setBookings)
+        .catch((error) => console.error("Lỗi tải lịch hẹn Supabase:", error));
+    } else {
+      setBookings([]);
+    }
     setPricingConfig(loadPricingConfig());
     if (user?.phone) setSearchPhone(user.phone);
 
@@ -63,11 +69,14 @@ export default function CustomerDashboardPage() {
     setTimeout(() => setSelectedPrompt(null), 300);
   };
 
-  const handleCancelBooking = (id: string) => {
+  const handleCancelBooking = async (id: string) => {
     if (confirm("Quý khách có chắc chắn muốn hủy lịch hẹn tư vấn này?")) {
-      const updated = bookings.filter((b) => b.id !== id);
-      saveBookings(updated);
-      setBookings(updated);
+      try {
+        const cancelled = await cancelRemoteBooking(id);
+        setBookings((current) => current.map((booking) => (booking.id === id ? cancelled : booking)));
+      } catch (error) {
+        alert(error instanceof Error ? error.message : "Không thể hủy lịch hẹn.");
+      }
     }
   };
 
@@ -270,7 +279,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
               type="button"
               onClick={() => {
                 setActiveTab("my_bookings");
-                setBookings(loadBookings().bookings);
+                if (user?.phone) fetchBookings({ phone: user.phone }).then(setBookings).catch(() => undefined);
               }}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "my_bookings"
@@ -427,6 +436,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
               <div className="space-y-3">
                 {myFilteredBookings.map((b) => {
                   const isProcessed = b.status === "processed";
+                  const isCancelled = b.status === "cancelled";
                   return (
                     <div
                       key={b.id}
@@ -445,11 +455,13 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                           className={`text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1.5 ${
                             isProcessed
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : isCancelled
+                              ? "bg-slate-100 text-slate-600 border border-slate-200"
                               : "bg-amber-50 text-amber-700 border border-amber-200"
                           }`}
                         >
                           <span className="w-2 h-2 rounded-full bg-current"></span>
-                          {isProcessed ? "Đã xác nhận & xếp lịch" : "Chờ tiếp nhận"}
+                          {isProcessed ? "Đã xác nhận & xếp lịch" : isCancelled ? "Đã hủy" : "Chờ tiếp nhận"}
                         </span>
                       </div>
 
@@ -480,14 +492,14 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                           </button>
                         </div>
 
-                        <button
+                        {!isCancelled && <button
                           type="button"
                           onClick={() => handleCancelBooking(b.id)}
                           className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[16px]">delete</span>
                           <span>Hủy lịch hẹn</span>
-                        </button>
+                        </button>}
                       </div>
                     </div>
                   );

@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import type { Booking, QuoteSnapshot } from "@/lib/schemas";
-import { addBooking, loadBookings } from "@/lib/booking/storage";
+import { fetchBookings, createRemoteBooking } from "@/lib/booking/api";
 import { getAvailableWorkDays, generateDaySlots, type TimeSlot } from "@/lib/booking/slots";
-import { validatePhone, validateName } from "@/lib/booking/validate";
+import { validateDailyBookingLimit, validatePhone, validateName } from "@/lib/booking/validate";
 import { MAX_BOOKINGS_PER_SLOT } from "@/lib/constants";
 import { useAuth } from "@/hooks/useAuth";
 import { formatVnd } from "@/lib/quote/format";
@@ -56,8 +56,14 @@ export default function InChatBookingCard({
       setSelectedDate(days[0]);
     }
     setAllSlots(generateDaySlots());
-    setBookings(loadBookings().bookings);
   }, []);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    fetchBookings({ date: selectedDate })
+      .then(setBookings)
+      .catch(() => setErrorMessage("Chưa tải được lịch trống. Vui lòng kiểm tra kết nối và thử lại."));
+  }, [selectedDate]);
 
   // Cập nhật tên/SĐT nếu user đăng nhập thay đổi
   useEffect(() => {
@@ -84,11 +90,11 @@ export default function InChatBookingCard({
   // Tính số lượng booking đã có trong slot đã chọn
   const getSlotCount = (date: string, time: string) => {
     return bookings.filter(
-      (b) => b.date === date && b.time.startsWith(time) && b.status !== "processed"
+      (b) => b.date === date && b.time.startsWith(time) && b.status === "pending"
     ).length;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
@@ -120,12 +126,15 @@ export default function InChatBookingCard({
       setErrorMessage(`Khung giờ ${selectedSlot} ngày ${selectedDate} đã kín lịch (tối đa ${MAX_BOOKINGS_PER_SLOT} lịch). Quý khách vui lòng chọn khung giờ khác.`);
       return;
     }
+    const dailyLimitError = validateDailyBookingLimit(cleanPhone, selectedDate, bookings);
+    if (dailyLimitError) {
+      setErrorMessage(dailyLimitError);
+      return;
+    }
 
     setIsSubmitting(true);
 
     try {
-      const safeId = `EV-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 90)}`;
-      
       // Tự động phân công chuyên viên tối ưu nhất
       const bestStaff = getBestStaffForBooking({
         date: selectedDate,
@@ -134,28 +143,26 @@ export default function InChatBookingCard({
       });
       const shift = determineShift(selectedSlot);
 
-      const newBooking: Booking = {
-        id: safeId,
+      const newBooking = await createRemoteBooking({
         name: name.trim(),
         phone: cleanPhone,
         date: selectedDate,
         time: selectedSlot,
         eventType: eventType.trim(),
         notes: notes.trim(),
-        requirements,
-        status: "pending",
+        guestCount: requirements?.selection.guestCount,
         assignedStaffId: bestStaff?.id,
         assignedStaffName: bestStaff?.name,
         assignedStaffPhone: bestStaff?.phone,
         shift,
-        createdAt: new Date().toISOString(),
-      };
-
-      addBooking(newBooking);
-      onSuccess(newBooking);
+      });
+      onSuccess({
+        ...newBooking,
+        requirements,
+      });
     } catch (err) {
       console.error(err);
-      setErrorMessage("Có lỗi xảy ra khi lưu lịch hẹn. Vui lòng thử lại.");
+      setErrorMessage(err instanceof Error ? err.message : "Có lỗi xảy ra khi lưu lịch hẹn. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -205,7 +212,7 @@ export default function InChatBookingCard({
         <div>
           <label className="block font-semibold text-slate-800 mb-1.5 flex items-center justify-between">
             <span>1. Chọn ngày tư vấn (từ ngày mai)</span>
-            <span className="text-[11px] text-indigo-600 font-normal">Tối đa 2 lịch / khung giờ</span>
+            <span className="text-[11px] text-indigo-600 font-normal">Tối đa {MAX_BOOKINGS_PER_SLOT} lịch / khung giờ</span>
           </label>
           <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide py-1">
             {availableDays.length === 0 ? (

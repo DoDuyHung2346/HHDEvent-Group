@@ -15,7 +15,11 @@ export const WORK_HOUR_END = 17;
 export const SLOT_STEP_MINUTES = 30;
 
 // Giới hạn đặt lịch
-export const MAX_BOOKINGS_PER_SLOT = 2;
+// Mỗi khung giờ có 4 chuyên viên, nên tối đa 4 khách có thể được nhận cùng lúc.
+export const MAX_BOOKINGS_PER_SLOT = 4;
+// Chống spam/chiếm toàn bộ lịch: một SĐT chỉ được giữ tối đa 3 lịch pending/ngày.
+// Mỗi khách chỉ giữ tối đa 2 lịch tư vấn đang chờ xử lý trên toàn hệ thống.
+export const MAX_BOOKINGS_PER_PHONE_PER_DAY = 2;
 
 // Timeout AI (ms)
 export const AI_TIMEOUT_MS = 8000;

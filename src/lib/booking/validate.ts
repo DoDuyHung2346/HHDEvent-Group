@@ -3,6 +3,7 @@ import {
   WORK_HOUR_START,
   WORK_HOUR_END,
   MAX_BOOKINGS_PER_SLOT,
+  MAX_BOOKINGS_PER_PHONE_PER_DAY,
 } from "@/lib/constants";
 
 export interface ValidationResult {
@@ -84,7 +85,7 @@ export function validateTime(timeStr: string): string | null {
 }
 
 /**
- * Kiểm tra slot có còn chỗ không (tối đa 2 lịch/khung giờ).
+ * Kiểm tra slot có còn chỗ không (tối đa 4 lịch/khung giờ).
  */
 export function validateSlotAvailability(
   date: string,
@@ -99,6 +100,26 @@ export function validateSlotAvailability(
     return `Khung giờ ${time} ngày ${date} đã đầy (tối đa ${MAX_BOOKINGS_PER_SLOT} lịch). Vui lòng chọn giờ khác.`;
   }
 
+  return null;
+}
+
+export function validateDailyBookingLimit(
+  phone: string,
+  date: string,
+  existingBookings: Booking[],
+  excludeBookingId?: string
+): string | null {
+  const normalizedPhone = phone.replace(/\s+/g, "");
+  const count = existingBookings.filter(
+    (booking) =>
+      booking.id !== excludeBookingId &&
+      booking.status === "pending" &&
+      booking.phone.replace(/\s+/g, "") === normalizedPhone
+  ).length;
+
+  if (count >= MAX_BOOKINGS_PER_PHONE_PER_DAY) {
+    return `Số điện thoại này đã có tối đa ${MAX_BOOKINGS_PER_PHONE_PER_DAY} lịch hẹn đang chờ xử lý. Vui lòng hoàn tất hoặc hủy một lịch trước khi đặt thêm.`;
+  }
   return null;
 }
 
@@ -130,6 +151,8 @@ export function validateBookingForm(
       existingBookings
     );
     if (slotErr) errors.time = slotErr;
+    const dailyLimitErr = validateDailyBookingLimit(data.phone, data.date, existingBookings);
+    if (dailyLimitErr) errors.date = dailyLimitErr;
   }
 
   return {

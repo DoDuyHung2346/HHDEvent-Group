@@ -65,6 +65,8 @@ export const ChatResponseSchema = z.object({
     .tuple([z.string(), z.string(), z.string()]),
   needs_booking: z.boolean(),
   needs_requirements: z.boolean().optional(),
+  // API có thể yêu cầu UI mở ngay phiếu hẹn sau khi đã dự toán sơ bộ.
+  show_booking_form: z.boolean().optional(),
   prefill: z
     .object({
       guestCount: z.number().optional(),
@@ -95,7 +97,7 @@ export const BookingSchema = z.object({
   eventType: z.string().optional(),
   notes: z.string().max(500).optional(),
   requirements: QuoteSnapshotSchema.optional(),
-  status: z.enum(["pending", "processed"]).default("pending"),
+  status: z.enum(["pending", "processed", "cancelled"]).default("pending"),
   assignedStaffId: z.string().optional(),
   assignedStaffName: z.string().optional(),
   assignedStaffPhone: z.string().optional(),

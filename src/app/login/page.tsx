@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { recordLoginAttempt } from "@/lib/auth/loginHistory";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 function LoginContent() {
   const router = useRouter();
@@ -18,10 +19,13 @@ function LoginContent() {
   const [role, setRole] = useState<"customer" | "admin">(initialRole);
 
   // Customer form inputs
-  const [customerName, setCustomerName] = useState("Nguyễn Thanh Tuấn");
-  const [customerPhone, setCustomerPhone] = useState("0912345678");
-  const [customerEmail, setCustomerEmail] = useState("khachhang@gmail.com");
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+  const [customerPassword, setCustomerPassword] = useState("");
+  const [customerAuthMode, setCustomerAuthMode] = useState<"login" | "signup">("login");
   const [customerError, setCustomerError] = useState("");
+  const [customerNotice, setCustomerNotice] = useState("");
   const [isCustomerLoading, setIsCustomerLoading] = useState(false);
 
   // Admin form inputs
@@ -38,6 +42,7 @@ function LoginContent() {
     setIsCustomerLoading(false);
     setIsAdminLoading(false);
     setCustomerError("");
+    setCustomerNotice("");
     setAdminError("");
 
     return () => {
@@ -47,45 +52,94 @@ function LoginContent() {
     };
   }, [role]);
 
-  const handleCustomerSubmit = (e: React.FormEvent) => {
+  const handleCustomerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setCustomerError("");
+    setCustomerNotice("");
 
-    if (!customerName.trim()) {
+    if (customerAuthMode === "signup" && !customerName.trim()) {
       setCustomerError("Vui lòng nhập họ và tên của Quý khách.");
       return;
     }
 
     const cleanPhone = customerPhone.replace(/\s+/g, "");
-    if (!/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(cleanPhone)) {
+    if (customerAuthMode === "signup" && !/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(cleanPhone)) {
       setCustomerError("Số điện thoại không hợp lệ (10 số, đầu số Việt Nam).");
+      return;
+    }
+    if (!customerEmail.trim()) {
+      setCustomerError("Vui lòng nhập email để đăng ký hoặc đăng nhập.");
+      return;
+    }
+    if (!/^\S+@\S+\.\S+$/.test(customerEmail.trim())) {
+      setCustomerError("Email chưa đúng định dạng.");
+      return;
+    }
+    if (customerPassword.length < 6) {
+      setCustomerError("Mật khẩu cần có ít nhất 6 ký tự.");
       return;
     }
 
     setIsCustomerLoading(true);
-    loginUser(customerName.trim(), cleanPhone, customerEmail);
+    try {
+      const supabase = getBrowserSupabaseClient();
+      const email = customerEmail.trim().toLowerCase();
+      const authResult = customerAuthMode === "signup"
+        ? await supabase.auth.signUp({
+            email,
+            password: customerPassword,
+            options: { data: { name: customerName.trim(), phone: cleanPhone }, emailRedirectTo: `${window.location.origin}/login` },
+          })
+        : await supabase.auth.signInWithPassword({ email, password: customerPassword });
 
-    // Ghi nhận lịch sử đăng nhập
-    recordLoginAttempt({
-      role: "customer",
-      name: customerName.trim(),
-      identifier: cleanPhone,
-      status: "success",
-    });
+      if (authResult.error) {
+        const isEmailRateLimited = /email rate limit exceeded|over_email_send_rate_limit/i.test(authResult.error.message);
+        setCustomerError(
+          isEmailRateLimited
+            ? "Supabase đang tạm giới hạn số email xác nhận đã gửi cho địa chỉ này. Tài khoản có thể đã được tạo ở lần bấm trước: hãy kiểm tra Inbox/Spam để bấm liên kết xác nhận, rồi chọn Đăng nhập. Không bấm Đăng ký thêm; nếu chưa nhận được email, chờ hết thời gian giới hạn hoặc dùng một email khác để thử."
+            : authResult.error.message
+        );
+        recordLoginAttempt({ role: "customer", name: customerName.trim(), identifier: email, status: "failed", reason: authResult.error.message });
+        return;
+      }
 
-    timeoutRef.current = setTimeout(() => {
-      setIsCustomerLoading(false);
+      // Nếu Supabase bật xác nhận email, chưa có session cho đến khi khách bấm link.
+      if (!authResult.data.session || !authResult.data.user) {
+        setCustomerNotice(`Đăng ký thành công. Vui lòng kiểm tra email ${email} và xác nhận tài khoản, sau đó quay lại đăng nhập.`);
+        return;
+      }
+
+      const metadata = authResult.data.user.user_metadata ?? {};
+      const resolvedName = typeof metadata.name === "string" ? metadata.name : customerName.trim();
+      const resolvedPhone = typeof metadata.phone === "string" ? metadata.phone : cleanPhone;
+      if (!resolvedName || !/^(0|\+84)(3|5|7|8|9)\d{8}$/.test(resolvedPhone)) {
+        setCustomerError("Tài khoản này thiếu họ tên hoặc số điện thoại hợp lệ. Vui lòng liên hệ hỗ trợ để cập nhật hồ sơ.");
+        return;
+      }
+      loginUser(resolvedName, resolvedPhone, email);
+
+      recordLoginAttempt({ role: "customer", name: resolvedName, identifier: email, status: "success" });
+
       if (externalPrompt) {
         router.push(`/customer?prompt=${encodeURIComponent(externalPrompt)}`);
       } else {
         router.push("/customer");
       }
-    }, 250);
+    } catch (error) {
+      setCustomerError(error instanceof Error ? error.message : "Không thể kết nối hệ thống đăng nhập.");
+    } finally {
+      setIsCustomerLoading(false);
+    }
   };
 
   const handleAdminSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setAdminError("");
+
+    if (!/^\S+@\S+\.\S+$/.test(adminEmail.trim()) || !adminPassword) {
+      setAdminError("Vui lòng nhập email và mật khẩu quản trị hợp lệ.");
+      return;
+    }
 
     setIsAdminLoading(true);
     const res = loginAdmin(adminEmail, adminPassword);
@@ -176,7 +230,11 @@ function LoginContent() {
 
         {/* Form: Khách Hàng */}
         {role === "customer" && (
-          <form onSubmit={handleCustomerSubmit} className="space-y-4 text-xs">
+          <form noValidate onSubmit={handleCustomerSubmit} className="space-y-4 text-xs">
+            <div className="flex rounded-xl bg-slate-100 p-1 font-bold">
+              <button type="button" onClick={() => setCustomerAuthMode("login")} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "login" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng nhập</button>
+              <button type="button" onClick={() => setCustomerAuthMode("signup")} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "signup" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng ký</button>
+            </div>
             <div>
               <label className="block font-bold text-slate-700 mb-1">
                 Họ và tên Quý khách <span className="text-red-500">*</span>
@@ -187,7 +245,6 @@ function LoginContent() {
                 onChange={(e) => setCustomerName(e.target.value)}
                 placeholder="Nguyễn Văn A"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-medium"
-                required
               />
             </div>
 
@@ -201,13 +258,12 @@ function LoginContent() {
                 onChange={(e) => setCustomerPhone(e.target.value)}
                 placeholder="0912 345 678"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-mono font-medium"
-                required
               />
             </div>
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                Email nhận kịch bản & báo giá (Không bắt buộc)
+                Email <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
@@ -218,10 +274,27 @@ function LoginContent() {
               />
             </div>
 
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Mật khẩu <span className="text-red-500">*</span></label>
+              <input
+                type="password"
+                value={customerPassword}
+                onChange={(e) => setCustomerPassword(e.target.value)}
+                placeholder="Ít nhất 6 ký tự"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-mono font-medium"
+              />
+            </div>
+
             {customerError && (
               <div className="p-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">error</span>
                 <span>{customerError}</span>
+              </div>
+            )}
+            {customerNotice && (
+              <div className="p-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                <span>{customerNotice}</span>
               </div>
             )}
 
@@ -231,14 +304,14 @@ function LoginContent() {
               className="w-full py-3.5 bg-[#5b32e6] hover:bg-[#4a24c2] text-white font-extrabold rounded-xl shadow-md shadow-purple-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-[18px]">smart_toy</span>
-              <span>{isCustomerLoading ? "Đang truy cập..." : "Vào Trải Nghiệm Chatbot Tư Vấn Sự Kiện"}</span>
+              <span>{isCustomerLoading ? "Đang xử lý..." : customerAuthMode === "signup" ? "Tạo Tài Khoản Khách Hàng" : "Đăng Nhập Chatbot Tư Vấn"}</span>
             </button>
           </form>
         )}
 
         {/* Form: Ban Quản Trị */}
         {role === "admin" && (
-          <form onSubmit={handleAdminSubmit} className="space-y-4 text-xs">
+          <form noValidate onSubmit={handleAdminSubmit} className="space-y-4 text-xs">
             <div>
               <label className="block font-bold text-slate-700 mb-1">
                 Email Quản Trị Viên <span className="text-red-500">*</span>
@@ -249,7 +322,6 @@ function LoginContent() {
                 onChange={(e) => setAdminEmail(e.target.value)}
                 placeholder="admin@eventviet.vn"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono font-medium"
-                required
               />
             </div>
 
@@ -263,7 +335,6 @@ function LoginContent() {
                 onChange={(e) => setAdminPassword(e.target.value)}
                 placeholder="••••••••"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono font-medium"
-                required
               />
               <p className="text-[10px] text-slate-400 mt-1">Mật khẩu mặc định hệ thống: <code className="text-purple-600 font-bold">admin2026</code></p>
             </div>

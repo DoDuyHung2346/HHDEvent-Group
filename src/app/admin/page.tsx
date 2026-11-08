@@ -4,12 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  loadBookings,
-  saveBookings,
-  updateBookingStatus,
-  deleteProcessedBooking,
-} from "@/lib/booking/storage";
+import { deleteRemoteProcessedBooking, fetchAllRemoteBookings, updateRemoteBookingStatus } from "@/lib/booking/api";
 import type { Booking } from "@/lib/schemas";
 import {
   loadPricingConfig,
@@ -154,7 +149,9 @@ export default function AdminDashboardPage() {
   };
 
   useEffect(() => {
-    setBookingsList(loadBookings().bookings);
+    fetchAllRemoteBookings()
+      .then(setBookingsList)
+      .catch((error) => console.error("Lỗi tải lịch hẹn Supabase:", error));
     setPricingConfig(loadPricingConfig());
     setDocuments(loadDocuments());
     setCompanyProfile(loadCompanyProfile());
@@ -183,22 +180,24 @@ export default function AdminDashboardPage() {
     });
   }, [bookingsList, searchQuery, statusFilter]);
 
-  const handleMarkProcessed = (id: string) => {
-    updateBookingStatus(id, "processed");
-    const { bookings } = loadBookings();
-    setBookingsList(bookings);
-    showToast(`Đã duyệt lịch hẹn #${id}`);
+  const handleMarkProcessed = async (id: string) => {
+    try {
+      const booking = await updateRemoteBookingStatus(id, "processed");
+      setBookingsList((current) => current.map((item) => (item.id === id ? booking : item)));
+      showToast(`Đã duyệt lịch hẹn #${id}`);
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Không thể duyệt lịch hẹn.");
+    }
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = async () => {
     if (!deleteConfirmId) return;
-    const ok = deleteProcessedBooking(deleteConfirmId);
-    if (ok) {
-      const { bookings } = loadBookings();
-      setBookingsList(bookings);
+    try {
+      await deleteRemoteProcessedBooking(deleteConfirmId);
+      setBookingsList((current) => current.filter((booking) => booking.id !== deleteConfirmId));
       showToast(`Đã xóa lịch hẹn #${deleteConfirmId}`);
-    } else {
-      showToast("Chỉ xóa được lịch hẹn đã xử lý xong!");
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Chỉ xóa được lịch hẹn đã xử lý xong!");
     }
     setDeleteConfirmId(null);
   };

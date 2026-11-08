@@ -3,13 +3,20 @@ import { isRateLimited } from "@/lib/rateLimit";
 import { ChatRequestWithContextSchema } from "@/lib/schemas";
 import { retrieveWithContext } from "@/lib/kb/retrieve";
 import { generateSuggestions, refineSuggestions } from "@/lib/suggestions";
-import { getSpecialistHandoffResponse, getUnrelatedResponse } from "@/lib/ai/mock";
+import { getBookingFormResponse, getContactResponse, getGreetingResponse, getSpecialistHandoffResponse, getUnrelatedResponse } from "@/lib/ai/mock";
 import { callAIWithFallback } from "@/lib/ai/client";
 import { RETRIEVAL_THRESHOLD, RESCHEDULE_KEYWORDS, URGENT_KEYWORDS } from "@/lib/constants";
 import { getStageEstimate } from "@/lib/quote/stageEstimate";
-import { isEventRelatedQuestion, isExplicitlyOutsideEventDomain } from "@/lib/ai/domain";
+import { getPreliminaryEventEstimate } from "@/lib/quote/preliminaryEstimate";
+import { isContactRequest, isEventRelatedQuestion, isExplicitlyOutsideEventDomain, isGreeting, isSchedulingRequest } from "@/lib/ai/domain";
 
 const RAG_BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
+
+// Nguồn vẫn được giữ trong metadata cho quản trị/RAG, nhưng khách hàng không
+// cần thấy ký hiệu kỹ thuật như [1], [2] chen vào nội dung tư vấn.
+function removeInlineCitations(answer: string): string {
+  return answer.replace(/\s*\[(?:\d+\s*(?:,\s*\d+\s*)*)\]/g, "");
+}
 
 // Detect intent từ message
 function detectIntent(message: string): "reschedule" | "urgent" | "normal" {
@@ -64,13 +71,40 @@ export async function POST(req: NextRequest) {
   // Detect intent trước
   const intent = detectIntent(message);
 
+  // Lời chào là conversational intent, không cần truy xuất FAQ.
+  if (isGreeting(message)) {
+    return NextResponse.json({ ...getGreetingResponse(), intent: "normal" as const });
+  }
+
+  // Yêu cầu hẹn có giờ/ngày luôn ưu tiên hơn yêu cầu xin thông tin liên hệ.
+  if (isSchedulingRequest(message)) {
+    return NextResponse.json({ ...getBookingFormResponse(), intent: "normal" as const });
+  }
+
+  // Liên hệ là intent độc lập, không để giá sân khấu ở history lấn át.
+  if (isContactRequest(message)) {
+    return NextResponse.json({ ...getContactResponse(), intent: "normal" as const });
+  }
+
   // Báo giá diện tích là phép tính xác định từ bảng giá, không cần chờ LLM.
   const stageEstimate = getStageEstimate(message, history);
   if (stageEstimate) return NextResponse.json({ ...stageEstimate, intent: "normal" as const });
 
   // Chỉ những yêu cầu liên quan tổ chức sự kiện mới được đi tới luồng tư vấn.
-  if (isExplicitlyOutsideEventDomain(message) || !isEventRelatedQuestion(message)) {
+  if (isExplicitlyOutsideEventDomain(message) || !isEventRelatedQuestion(message, history)) {
     return NextResponse.json({ ...getUnrelatedResponse(), intent: "out_of_scope" as const });
+  }
+
+  // Với yêu cầu mới có quy mô/ngân sách nhưng chưa có tài liệu khớp tuyệt đối,
+  // dùng các mức giá đã công bố trong catalog để dự toán minh bạch trước khi
+  // chuyển khách sang chuyên viên chốt báo giá.
+  const preliminaryEstimate = getPreliminaryEventEstimate(message, history);
+  if (preliminaryEstimate) {
+    return NextResponse.json({
+      ...preliminaryEstimate,
+      show_booking_form: true,
+      intent: "normal" as const,
+    });
   }
 
   // Nếu là đổi lịch → trả special response
@@ -166,11 +200,12 @@ export async function POST(req: NextRequest) {
         ragData.status === "degraded" ||
         ragData.meta?.intent === "out_of_scope";
 
-      const answer =
+      const answer = removeInlineCitations(
         ragData.answer ||
         (isOutOfScope
           ? "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp."
-          : "");
+          : "")
+      );
 
       // Fallback của RAG với câu hỏi vẫn thuộc lĩnh vực là một yêu cầu cần
       // chuyên viên, không phải "ngoài phạm vi" và cũng không được bịa đáp án.
