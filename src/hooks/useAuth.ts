@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { getClientUser, setClientUser, loginClientUser, logoutClientUser, type ClientUser } from "@/lib/auth/userAuth";
 import { getAdminSession, setAdminSession, authenticateAdmin, logoutAdmin, type AdminAccount } from "@/lib/auth/adminAuth";
+import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
 
 export function useAuth() {
   const [user, setUser] = useState<ClientUser | null>(null);
@@ -33,9 +34,15 @@ export function useAuth() {
     return u;
   }, []);
 
-  const logoutUser = useCallback(() => {
-    logoutClientUser();
-    setUser(null);
+  const logoutUser = useCallback(async () => {
+    try {
+      await getBrowserSupabaseClient().auth.signOut();
+    } catch {
+      // Vẫn xóa phiên giao diện nếu máy đang offline hoặc thiếu cấu hình Auth.
+    } finally {
+      logoutClientUser();
+      setUser(null);
+    }
   }, []);
 
   // Admin functions

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { loadBookings, saveBookings } from "@/lib/booking/storage";
+import { cancelRemoteBooking, fetchBookings } from "@/lib/booking/api";
 import type { Booking } from "@/lib/schemas";
 import { generateIcsFile } from "@/lib/calendar/generateIcs";
 
@@ -19,7 +19,11 @@ export default function MyBookingsModal({ isOpen, onClose }: MyBookingsModalProp
 
   useEffect(() => {
     if (isOpen) {
-      setBookings(loadBookings().bookings);
+      if (user?.phone) {
+        fetchBookings({ phone: user.phone })
+          .then(setBookings)
+          .catch(() => setBookings([]));
+      }
     }
   }, [isOpen, refreshKey]);
 
@@ -44,11 +48,15 @@ export default function MyBookingsModal({ isOpen, onClose }: MyBookingsModalProp
 
   if (!isOpen) return null;
 
-  const handleCancelBooking = (id: string) => {
+  const handleCancelBooking = async (id: string) => {
     if (confirm("Quý khách có chắc chắn muốn hủy lịch hẹn này?")) {
-      const updated = bookings.filter((b) => b.id !== id);
-      saveBookings(updated);
-      setRefreshKey((k) => k + 1);
+      try {
+        const cancelled = await cancelRemoteBooking(id);
+        setBookings((current) => current.map((booking) => (booking.id === id ? cancelled : booking)));
+        setRefreshKey((k) => k + 1);
+      } catch {
+        // Error is surfaced by the next refresh; keep existing list intact.
+      }
     }
   };
 

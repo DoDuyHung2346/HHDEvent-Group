@@ -10,7 +10,12 @@ import {
   addMessageToSession,
   updateCustomerMemory,
   getSession,
+  loadCustomers,
+  loadSessions,
+  saveCustomers,
+  saveSessions,
 } from "@/lib/customer/storage";
+import { fetchRemoteHistory, syncRemoteCustomer, syncRemoteMessage, syncRemoteSession } from "@/lib/customer/api";
 
 export function useCustomer(phone: string | null) {
   const [customer, setCustomer] = useState<Customer | null>(null);
@@ -18,7 +23,7 @@ export function useCustomer(phone: string | null) {
   const [currentSession, setCurrentSession] = useState<ChatSession | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // ── Load dữ liệu từ storage ────────────────────────────────────────────────
+  // ── Load database trước; localStorage chỉ là cache/fallback khi mất mạng. ──
   const loadHistory = useCallback(() => {
     if (!phone || !phone.trim()) {
       setCustomer(null);
@@ -45,10 +50,27 @@ export function useCustomer(phone: string | null) {
     });
 
     setIsLoading(false);
+
+    void fetchRemoteHistory(trimmedPhone)
+      .then(({ customer: remoteCustomer, sessions: remoteSessions }) => {
+        if (!remoteCustomer) return;
+        const customers = loadCustomers();
+        customers[trimmedPhone] = remoteCustomer;
+        saveCustomers(customers);
+        const allSessions = loadSessions();
+        for (const session of remoteSessions) allSessions[session.id] = session;
+        saveSessions(allSessions);
+        setCustomer(remoteCustomer);
+        setSessions(remoteSessions);
+        setCurrentSession((current) => current ?? remoteSessions[0] ?? null);
+      })
+      .catch(() => {
+        // Cache local vẫn cho phép demo tiếp tục khi Internet/Supabase tạm lỗi.
+      });
   }, [phone]);
 
   useEffect(() => {
-    loadHistory();
+    void Promise.resolve().then(loadHistory);
   }, [loadHistory]);
 
   // ── Khởi tạo hoặc cập nhật hồ sơ khách hàng ────────────────────────────────
@@ -71,6 +93,8 @@ export function useCustomer(phone: string | null) {
       setCustomer(updatedCustomer);
       setSessions(customerSessions);
       setCurrentSession(activeSession);
+      void syncRemoteCustomer(updatedCustomer).catch(() => undefined);
+      void syncRemoteSession(activeSession).catch(() => undefined);
       return { customer: updatedCustomer, session: activeSession };
     },
     []
@@ -90,6 +114,8 @@ export function useCustomer(phone: string | null) {
       }
 
       addMessageToSession(activeSessionId, message);
+
+      void syncRemoteMessage(activeSessionId, message).catch(() => undefined);
 
       // Đồng bộ state sau khi thêm tin nhắn
       const freshSession = getSession(activeSessionId);
@@ -125,6 +151,8 @@ export function useCustomer(phone: string | null) {
       }
 
       setCustomer(getCustomer(normalized));
+      const syncedCustomer = getCustomer(normalized);
+      if (syncedCustomer) void syncRemoteCustomer(syncedCustomer).catch(() => undefined);
     },
     [phone]
   );
@@ -138,6 +166,7 @@ export function useCustomer(phone: string | null) {
     setCurrentSession(newSession);
     setSessions(freshSessions);
     setCustomer(getCustomer(phone.trim()));
+    void syncRemoteSession(newSession).catch(() => undefined);
     return newSession;
   }, [phone]);
 

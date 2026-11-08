@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { loadBookings, saveBookings } from "@/lib/booking/storage";
+import { useEffect, useState } from "react";
+import { fetchBookings, rescheduleRemoteBooking } from "@/lib/booking/api";
 import { getAvailableWorkDays, generateDaySlots, type TimeSlot } from "@/lib/booking/slots";
 import { MAX_BOOKINGS_PER_SLOT } from "@/lib/constants";
+import { validateDailyBookingLimit } from "@/lib/booking/validate";
 import type { Booking } from "@/lib/schemas";
 
 interface RescheduleCardProps {
@@ -20,10 +21,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
 
   const [availableDays] = useState<string[]>(() => getAvailableWorkDays(14));
   const [daySlots] = useState<TimeSlot[]>(() => generateDaySlots());
-  const [allBookings, setAllBookings] = useState<Booking[]>(() => {
-    if (typeof window === "undefined") return [];
-    return loadBookings().bookings;
-  });
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
 
   const [selectedDate, setSelectedDate] = useState(() => {
     const days = getAvailableWorkDays(14);
@@ -32,6 +30,18 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
   const [selectedTime, setSelectedTime] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!selectedDate) return;
+    fetchBookings({ date: selectedDate })
+      .then((slotBookings) => {
+        setAllBookings((current) => {
+          const merged = [...current.filter((booking) => booking.phone), ...slotBookings];
+          return Array.from(new Map(merged.map((booking) => [booking.id, booking])).values());
+        });
+      })
+      .catch(() => undefined);
+  }, [selectedDate]);
 
   // Format date display helper
   const formatDayDisplay = (dateStr: string) => {
@@ -49,7 +59,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
   };
 
   // Step 1: Tra cứu lịch hẹn theo SĐT
-  const handleLookup = (e?: React.FormEvent) => {
+  const handleLookup = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError("");
 
@@ -59,8 +69,15 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
       return;
     }
 
-    const { bookings } = loadBookings();
-    setAllBookings(bookings);
+    let bookings: Booking[];
+    try {
+      bookings = await fetchBookings({ phone: trimmed });
+      const slotBookings = selectedDate ? await fetchBookings({ date: selectedDate }) : [];
+      setAllBookings(Array.from(new Map([...bookings, ...slotBookings].map((booking) => [booking.id, booking])).values()));
+    } catch (lookupError) {
+      setError(lookupError instanceof Error ? lookupError.message : "Không thể tra cứu lịch hẹn.");
+      return;
+    }
 
     const pending = bookings.filter((b) => b.phone === trimmed && b.status === "pending");
 
@@ -93,7 +110,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
   };
 
   // Step 3: Xác nhận đổi lịch
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!selectedBooking || !selectedDate || !selectedTime) {
       setError("Vui lòng chọn cả ngày và khung giờ mới.");
       return;
@@ -103,27 +120,30 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
       setError("Khung giờ này vừa có người đặt và đã kín lịch. Vui lòng chọn khung giờ khác.");
       return;
     }
+    const dailyLimitError = validateDailyBookingLimit(
+      selectedBooking.phone,
+      selectedDate,
+      allBookings,
+      selectedBooking.id
+    );
+    if (dailyLimitError) {
+      setError(dailyLimitError);
+      return;
+    }
 
     setIsSubmitting(true);
     setError("");
 
     try {
-      const updatedBooking: Booking = {
-        ...selectedBooking,
-        date: selectedDate,
-        time: selectedTime,
-      };
-
-      const { bookings } = loadBookings();
-      const updatedList = bookings.map((b) => (b.id === selectedBooking.id ? updatedBooking : b));
-      saveBookings(updatedList);
+      const updatedBooking = await rescheduleRemoteBooking(selectedBooking.id, selectedDate, selectedTime);
+      const updatedList = allBookings.map((b) => (b.id === selectedBooking.id ? updatedBooking : b));
       setAllBookings(updatedList);
       setSelectedBooking(updatedBooking);
 
       setStep("confirmed");
       onRescheduled?.(updatedBooking);
-    } catch {
-      setError("Không thể cập nhật lịch hẹn. Vui lòng thử lại.");
+    } catch (updateError) {
+      setError(updateError instanceof Error ? updateError.message : "Không thể cập nhật lịch hẹn. Vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
@@ -254,7 +274,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
           {/* Chọn ngày mới */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-slate-700 block">
-              1. Chọn ngày làm việc mới (Thứ 2 - Thứ 7):
+              1. Chọn ngày hẹn mới:
             </label>
             <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-thin">
               {availableDays.slice(0, 7).map((day) => {
@@ -280,6 +300,19 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
                 );
               })}
             </div>
+            <label className="flex items-center gap-2 text-[11px] text-slate-600">
+              <span>Hoặc chọn ngày khác:</span>
+              <input
+                type="date"
+                min={availableDays[0]}
+                value={selectedDate}
+                onChange={(event) => {
+                  setSelectedDate(event.target.value);
+                  setError("");
+                }}
+                className="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-800"
+              />
+            </label>
           </div>
 
           {/* Chọn giờ mới */}

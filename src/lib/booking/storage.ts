@@ -3,6 +3,7 @@
 import type { Booking, BookingStorage } from "@/lib/schemas";
 import { BookingStorageSchema } from "@/lib/schemas";
 import { BOOKING_SCHEMA_VERSION, BOOKING_STORAGE_KEY } from "@/lib/constants";
+import { validateDailyBookingLimit } from "@/lib/booking/validate";
 
 /**
  * Đọc danh sách lịch hẹn từ localStorage.
@@ -76,6 +77,8 @@ export function saveBookings(bookings: Booking[]): void {
  */
 export function addBooking(booking: Booking): void {
   const { bookings } = loadBookings();
+  const dailyLimitError = validateDailyBookingLimit(booking.phone, booking.date, bookings);
+  if (dailyLimitError) throw new Error(dailyLimitError);
   saveBookings([...bookings, booking]);
 }
 

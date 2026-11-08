@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 interface GuestCountInputProps {
   value: number;
   onChange: (count: number) => void;
@@ -7,6 +9,24 @@ interface GuestCountInputProps {
 
 export function GuestCountInput({ value, onChange }: GuestCountInputProps) {
   const presets = [30, 50, 100, 200];
+  const [draft, setDraft] = useState(String(value));
+
+  const handleDraftChange = (raw: string) => {
+    setDraft(raw);
+    const parsed = Number(raw);
+    // Giữ nguyên giá trị đang gõ (ví dụ "1" khi sắp gõ "150") thay vì
+    // ép về 10 ngay lập tức, vốn khiến người dùng không thể nhập tay.
+    if (Number.isInteger(parsed) && parsed >= 10 && parsed <= 2000) {
+      onChange(parsed);
+    }
+  };
+
+  const commitDraft = () => {
+    const parsed = Number(draft);
+    const safe = Number.isInteger(parsed) ? Math.min(2000, Math.max(10, parsed)) : 10;
+    setDraft(String(safe));
+    onChange(safe);
+  };
 
   return (
     <div className="space-y-2">
@@ -25,11 +45,9 @@ export function GuestCountInput({ value, onChange }: GuestCountInputProps) {
           type="number"
           min={10}
           max={2000}
-          value={value || ""}
-          onChange={(e) => {
-            const v = parseInt(e.target.value, 10);
-            onChange(isNaN(v) ? 10 : Math.min(2000, Math.max(10, v)));
-          }}
+          value={draft}
+          onChange={(e) => handleDraftChange(e.target.value)}
+          onBlur={commitDraft}
           className="flex-1 px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4f46e5] bg-white shadow-2xs"
           placeholder="Nhập số khách (10 - 2000)"
         />
@@ -39,7 +57,10 @@ export function GuestCountInput({ value, onChange }: GuestCountInputProps) {
             <button
               key={preset}
               type="button"
-              onClick={() => onChange(preset)}
+              onClick={() => {
+                setDraft(String(preset));
+                onChange(preset);
+              }}
               className={`px-2 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
                 value === preset
                   ? "bg-[#4f46e5] text-white border-[#4f46e5] shadow-xs"

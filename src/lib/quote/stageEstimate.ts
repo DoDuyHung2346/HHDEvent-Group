@@ -16,6 +16,9 @@ function getAreaAfterLabel(text: string, label: string): number | null {
 
 export function getStageEstimate(message: string, history: ChatTurn[] = []): ChatResponse | null {
   const normalized = message.toLowerCase().replace(",", ".");
+  // Không để phép tính cũ trong history chiếm quyền xử lý một câu mới không
+  // hề hỏi về sân khấu/thảm (ví dụ câu hỏi xin số điện thoại chuyên viên).
+  if (!/(sân khấu|san khau|thảm đỏ|tham do)/i.test(normalized)) return null;
   const priorUserText = history.filter((turn) => turn.role === "user").map((turn) => turn.content).reverse().join(" ").toLowerCase();
   const stageArea = getAreaAfterLabel(normalized, "(?:sân khấu|san khau)") ?? getAreaAfterLabel(priorUserText, "(?:sân khấu|san khau)");
   const carpetArea = getAreaAfterLabel(normalized, "(?:thảm đỏ|tham do)") ?? stageArea;

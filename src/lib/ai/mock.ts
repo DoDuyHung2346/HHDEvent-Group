@@ -99,6 +99,60 @@ export function getUnrelatedResponse(): ChatResponse {
   };
 }
 
+export function getGreetingResponse(): ChatResponse {
+  return {
+    answer: "Xin chào! Em là trợ lý AI của EventViet. Em có thể tư vấn tổ chức sự kiện, lựa chọn dịch vụ và dự toán chi phí. Anh/chị đang quan tâm đến loại sự kiện nào ạ?",
+    options: [
+      { id: "greeting-service", label: "Xem dịch vụ EventViet", action: "ask", payload: "EventViet cung cấp những dịch vụ gì?" },
+      { id: "greeting-price", label: "Hỏi về chi phí", action: "ask", payload: "Chi phí tổ chức sự kiện được tính như thế nào?" },
+    ],
+    related_questions: [
+      "EventViet tổ chức những loại sự kiện nào?",
+      "Chi phí tổ chức sự kiện được tính như thế nào?",
+      "Tôi muốn tổ chức một sự kiện riêng?",
+    ],
+    needs_booking: false,
+    matched_faq_ids: [],
+    source: "ai",
+  };
+}
+
+export function getContactResponse(): ChatResponse {
+  return {
+    answer: "Bạn có thể gọi trực tiếp hotline EventViet 1900 6886 trong giờ làm việc để gặp bộ phận tư vấn. Hiện hệ thống chưa có Zalo OA hoặc số cá nhân chuyên viên đã được xác thực để cung cấp, nên mình không hiển thị thông tin liên hệ không chắc chắn.",
+    options: [
+      { id: "contact-hotline", label: "Gọi hotline 1900 6886", action: "link", payload: "tel:19006886" },
+      { id: "contact-book", label: "Đặt lịch chuyên viên gọi lại", action: "open_booking", payload: "Tư vấn trực tiếp với chuyên viên" },
+    ],
+    related_questions: [
+      "Giờ làm việc của EventViet là khi nào?",
+      "Tôi cần chuẩn bị gì trước khi tư vấn?",
+      "Quy trình làm việc với EventViet như thế nào?",
+    ],
+    needs_booking: false,
+    matched_faq_ids: [],
+    source: "ai",
+  };
+}
+
+export function getBookingFormResponse(): ChatResponse {
+  return {
+    answer: "Mình đã nhận được yêu cầu hẹn tư vấn. Bạn vui lòng xác nhận thông tin trong phiếu bên dưới để EventViet ghi nhận đúng ngày, giờ và số điện thoại liên hệ.",
+    options: [
+      { id: "booking-confirm", label: "Xác nhận lịch tư vấn", action: "open_booking", payload: "Tư vấn sự kiện" },
+      { id: "booking-change", label: "Chọn thời gian khác", action: "open_booking", payload: "Tư vấn sự kiện" },
+    ],
+    related_questions: [
+      "Giờ làm việc của EventViet là khi nào?",
+      "Tôi cần chuẩn bị gì trước buổi tư vấn?",
+      "Quy trình làm việc với EventViet như thế nào?",
+    ],
+    needs_booking: true,
+    matched_faq_ids: [],
+    source: "ai",
+  };
+}
+
 /** Dịch vụ sự kiện hợp lệ nhưng cần chuyên viên chốt phương án. */
 export function getSpecialistHandoffResponse(): ChatResponse {
   return {

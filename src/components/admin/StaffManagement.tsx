@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { StaffMember, StaffRole, StaffStatus } from "@/lib/staff/types";
 import { loadStaffList, deleteStaffMember, setStaffStatus } from "@/lib/staff/storage";
-import { loadBookings } from "@/lib/booking/storage";
+import { fetchAllRemoteBookings } from "@/lib/booking/api";
 import type { Booking } from "@/lib/schemas";
 import AddStaffModal from "./AddStaffModal";
 import StaffScheduleModal from "./StaffScheduleModal";
@@ -29,7 +29,12 @@ export default function StaffManagement({ onShowToast }: StaffManagementProps) {
 
   const reloadData = () => {
     setStaffList(loadStaffList());
-    setBookingsList(loadBookings().bookings);
+    fetchAllRemoteBookings()
+      .then(setBookingsList)
+      .catch((error) => {
+        console.error("Lỗi tải lịch Supabase:", error);
+        onShowToast("Không thể tải lịch hẹn từ Supabase.");
+      });
   };
 
   useEffect(() => {
