@@ -216,7 +216,7 @@ export default function AdminDashboardPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Lich-hen-EventViet-${Date.now()}.csv`;
+    a.download = `Lich-hen-EventHHD-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     showToast("Đã xuất danh sách lịch hẹn sang file CSV!");
@@ -357,15 +357,21 @@ export default function AdminDashboardPage() {
       <header className="w-full z-50 bg-slate-950 text-white shadow-md border-b border-slate-800 sticky top-0 shrink-0">
         <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
-              EV
+            <div className="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-sm shadow-md">
+              <svg className="w-5 h-5 stroke-current fill-none stroke-[2.2]" viewBox="0 0 24 24">
+                <path
+                  d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-white text-base tracking-tight">
-                  EventViet
+                  EventHHD
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-950 text-purple-300 border border-purple-800 font-semibold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-800 font-semibold">
                   PORTAL QUẢN TRỊ NỘI BỘ
                 </span>
               </div>
@@ -1258,7 +1264,7 @@ export default function AdminDashboardPage() {
                       type="text"
                       value={newFaqQ}
                       onChange={(e) => setNewFaqQ(e.target.value)}
-                      placeholder="Ví dụ: EventViet có nhận tổ chức sự kiện tại Hà Nội và Đà Nẵng không?"
+                      placeholder="Ví dụ: EventHHD có nhận tổ chức sự kiện tại Hà Nội và Đà Nẵng không?"
                       className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-none focus:ring-1 focus:ring-purple-600"
                       required
                     />
@@ -1356,7 +1362,7 @@ export default function AdminDashboardPage() {
           <div className="space-y-6 animate-in fade-in duration-150">
             <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
               <div className="pb-3 border-b border-slate-100">
-                <h3 className="font-bold text-slate-900 text-base">Thông Tin Doanh Nghiệp EventViet</h3>
+                <h3 className="font-bold text-slate-900 text-base">Thông Tin Doanh Nghiệp EventHHD</h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   Thông tin này xuất hiện trên footer, biên bản xuất ra và tiêu đề hợp đồng tư vấn.
                 </p>

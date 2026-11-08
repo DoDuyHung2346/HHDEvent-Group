@@ -10,6 +10,17 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatVnd } from "@/lib/quote/format";
 import { getBestStaffForBooking } from "@/lib/staff/recommendation";
 import { determineShift } from "@/lib/staff/storage";
+import {
+  CalendarIcon,
+  ClockIcon,
+  UserIcon,
+  PhoneIcon,
+  TagIcon,
+  FileTextIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  SparklesIcon,
+} from "@/components/shared/FormIcons";
 
 interface InChatBookingCardProps {
   onSuccess: (booking: Booking) => void;
@@ -162,30 +173,34 @@ export default function InChatBookingCard({
   };
 
   return (
-    <div className="p-4 sm:p-5 rounded-xl bg-white border border-indigo-200 shadow-md space-y-4 my-2 text-slate-900 max-w-2xl animate-in fade-in duration-200">
+    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-indigo-200/90 shadow-md space-y-4 my-2 text-slate-900 max-w-2xl animate-in fade-in duration-200">
       {/* Card Header */}
-      <div className="flex items-center justify-between pb-3 bg-gradient-to-r from-indigo-50/70 to-slate-50 -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 px-4 sm:px-5 pt-4 rounded-t-xl border-b border-indigo-100">
+      <div className="flex items-center justify-between pb-3.5 bg-gradient-to-r from-indigo-50/80 to-slate-50 -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 px-4 sm:px-5 pt-4 rounded-t-2xl border-b border-indigo-100">
         <div>
-          <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#ffdcc3] text-[#2f1500] uppercase font-mono tracking-wider">
-            EventViet Concierge
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ffdcc3] text-[#2f1500] uppercase font-mono tracking-wider">
+            <SparklesIcon size={11} className="text-[#a44200]" />
+            <span>EventHHD Concierge</span>
           </span>
-          <h3 className="font-title-md text-sm sm:text-base text-slate-900 font-bold mt-0.5">
+          <h3 className="text-sm sm:text-base text-slate-900 font-bold mt-1">
             Phiếu Đặt Lịch Tư Vấn Trực Tiếp 1-1
           </h3>
+          <p className="text-[11px] text-slate-500 hidden sm:block">
+            Đặt lịch miễn phí cùng chuyên viên tổ chức sự kiện chuyên nghiệp
+          </p>
         </div>
-        <div className="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
-          <span className="material-symbols-outlined text-[20px]">event_available</span>
+        <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+          <CalendarIcon size={20} />
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3.5 text-xs">
+      <form onSubmit={handleSubmit} className="space-y-4 text-xs">
         {/* Requirements Summary if present */}
         {requirements && (
           <div className="p-3 bg-indigo-50/80 rounded-xl border border-indigo-150 space-y-1.5">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
-                <span className="material-symbols-outlined text-[15px] text-[#4f46e5]">receipt_long</span>
-                <span>Yêu cầu sự kiện đã chọn ({requirements.selection.guestCount} khách):</span>
+              <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1.5">
+                <FileTextIcon size={14} className="text-[#4f46e5] shrink-0" />
+                <span>Yêu cầu đã chọn ({requirements.selection.guestCount} khách):</span>
               </span>
               <span className="text-xs font-black text-[#3525cd]">
                 {formatVnd(requirements.subtotal)}
@@ -203,11 +218,14 @@ export default function InChatBookingCard({
 
         {/* Date Selector */}
         <div>
-          <label className="block font-semibold text-slate-800 mb-1.5 flex items-center justify-between">
-            <span>1. Chọn ngày tư vấn (từ ngày mai)</span>
-            <span className="text-[11px] text-indigo-600 font-normal">Tối đa 2 lịch / khung giờ</span>
+          <label className="font-semibold text-slate-800 mb-1.5 flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-indigo-950">
+              <CalendarIcon size={14} className="text-indigo-600 shrink-0" />
+              <span>1. Chọn ngày tư vấn (từ ngày mai) *</span>
+            </span>
+            <span className="text-[11px] text-indigo-600 font-normal">Tối đa 2 lịch / slot</span>
           </label>
-          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide py-1">
+          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none py-1 touch-pan-x -webkit-overflow-scrolling-touch">
             {availableDays.length === 0 ? (
               <div className="text-center py-2 text-slate-400 text-xs">Đang tải lịch...</div>
             ) : (
@@ -219,37 +237,38 @@ export default function InChatBookingCard({
                     key={d}
                     type="button"
                     onClick={() => setSelectedDate(d)}
-                    className={`shrink-0 min-w-[56px] sm:min-w-[64px] px-2.5 py-2 rounded-lg text-center border transition-all cursor-pointer ${
+                    className={`shrink-0 min-w-[62px] sm:min-w-[68px] min-h-[50px] px-2.5 py-2 rounded-xl text-center border transition-all cursor-pointer flex flex-col items-center justify-center select-none active:scale-95 ${
                       isSelected
-                        ? "bg-indigo-600 text-white border-indigo-600 shadow-xs"
+                        ? "bg-indigo-600 text-white border-indigo-600 shadow-xs font-bold scale-[1.02]"
                         : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-indigo-50 hover:border-indigo-300"
                     }`}
                   >
-                    <p className="font-bold text-xs">{dayName}</p>
-                    <p className={`text-[11px] ${isSelected ? "text-indigo-100" : "text-slate-500"}`}>{displayDate}</p>
+                    <span className="font-bold text-xs">{dayName}</span>
+                    <span className={`text-[11px] mt-0.5 ${isSelected ? "text-indigo-100" : "text-slate-500"}`}>{displayDate}</span>
                   </button>
                 );
               })
             )}
           </div>
-          <label className="mt-2 flex items-center gap-2 text-[11px] text-slate-600">
-            <span>Hoặc chọn ngày khác:</span>
+          <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-600">
+            <span className="shrink-0">Hoặc chọn ngày khác:</span>
             <input
               type="date"
               min={availableDays[0]}
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-slate-800"
+              className="h-10 sm:h-8 rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-base sm:text-xs text-slate-800 outline-none focus:ring-1 focus:ring-indigo-500"
             />
-          </label>
+          </div>
         </div>
 
         {/* Time Slot Selector */}
         <div>
-          <label className="block font-semibold text-slate-800 mb-1.5">
-            2. Khung giờ thuận tiện
+          <label className="font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5">
+            <ClockIcon size={14} className="text-indigo-600 shrink-0" />
+            <span>2. Khung giờ thuận tiện *</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-slate-50/80 rounded-lg border border-slate-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-44 sm:max-h-40 overflow-y-auto p-1.5 bg-slate-50/80 rounded-xl border border-slate-200">
             {allSlots.map((s) => {
               const count = getSlotCount(selectedDate, s.time);
               const isFull = count >= MAX_BOOKINGS_PER_SLOT;
@@ -260,16 +279,16 @@ export default function InChatBookingCard({
                   type="button"
                   disabled={isFull}
                   onClick={() => setSelectedSlot(s.time)}
-                  className={`p-2.5 rounded-md text-center text-xs font-medium border transition-all min-h-[44px] flex flex-col items-center justify-center ${
+                  className={`p-2.5 rounded-lg text-center text-xs font-medium border transition-all min-h-[46px] flex flex-col items-center justify-center select-none active:scale-95 ${
                     isFull
-                      ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed line-through"
+                      ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed line-through opacity-60"
                       : isSelected
-                      ? "bg-indigo-600 text-white border-indigo-600 shadow-xs cursor-pointer"
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-xs cursor-pointer font-bold scale-[1.02]"
                       : "bg-white text-slate-800 border-slate-200 hover:border-indigo-300 cursor-pointer"
                   }`}
                 >
-                  <div>{s.label}</div>
-                  {isFull && <span className="text-[9px] text-red-500 font-normal">Kín</span>}
+                  <span className="font-semibold">{s.label}</span>
+                  {isFull && <span className="text-[9px] text-red-500 font-normal">Kín lịch</span>}
                 </button>
               );
             })}
@@ -277,74 +296,109 @@ export default function InChatBookingCard({
         </div>
 
         {/* Customer Information */}
-        <div className="flex flex-col gap-3 pt-1 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 w-full">
           <div className="w-full">
             <label className="block font-medium text-slate-700 mb-1">
               Họ và tên Quý khách <span className="text-red-500">*</span>
             </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Nguyễn Văn A"
-              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 min-h-[44px]"
-            />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <UserIcon size={17} />
+              </div>
+              <input
+                type="text"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+                className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[46px] transition-all"
+              />
+            </div>
           </div>
 
           <div className="w-full">
             <label className="block font-medium text-slate-700 mb-1">
               Số điện thoại liên hệ <span className="text-red-500">*</span>
             </label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="0912 345 678"
-              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 min-h-[44px]"
-            />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <PhoneIcon size={17} />
+              </div>
+              <input
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="0912 345 678"
+                className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[46px] transition-all"
+              />
+            </div>
           </div>
         </div>
 
         {/* Event Type & Notes */}
-        <div className="flex flex-col gap-3 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
           <div className="w-full">
             <label className="block font-medium text-slate-700 mb-1">Loại hình sự kiện</label>
-            <input
-              type="text"
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              placeholder="Gala Dinner, Hội nghị, Ra mắt..."
-              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 min-h-[44px]"
-            />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <TagIcon size={17} />
+              </div>
+              <input
+                type="text"
+                value={eventType}
+                onChange={(e) => setEventType(e.target.value)}
+                placeholder="Gala Dinner, Hội nghị, Ra mắt..."
+                className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[46px] transition-all"
+              />
+            </div>
           </div>
 
           <div className="w-full">
             <label className="block font-medium text-slate-700 mb-1">Ghi chú yêu cầu đặc biệt</label>
-            <input
-              type="text"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Số lượng khách, yêu cầu riêng..."
-              className="w-full px-3 py-2.5 bg-white border border-slate-300 rounded-lg text-slate-900 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 min-h-[44px]"
-            />
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <FileTextIcon size={17} />
+              </div>
+              <input
+                type="text"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Số lượng khách, yêu cầu riêng..."
+                className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 min-h-[46px] transition-all"
+              />
+            </div>
           </div>
         </div>
 
         {errorMessage && (
-          <div className="p-2 bg-red-50 border border-red-200 text-red-600 rounded-lg text-xs flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px]">error</span>
+          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs flex items-center gap-2">
+            <AlertCircleIcon size={16} className="shrink-0 text-red-600" />
             <span>{errorMessage}</span>
           </div>
         )}
 
-        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+        <div className="pt-2 border-t border-slate-100">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 min-h-[44px] text-xs sm:text-sm"
+            className="w-full sm:w-auto sm:ml-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[48px] text-sm"
           >
-            <span className="material-symbols-outlined text-[18px]">check_circle</span>
-            <span>{isSubmitting ? "Đang ghi nhận..." : "Xác Nhận Đặt Lịch Tư Vấn 1-1"}</span>
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                <span>Đang ghi nhận...</span>
+              </>
+            ) : (
+              <>
+                <CheckCircleIcon size={18} className="shrink-0" />
+                <span>Xác Nhận Đặt Lịch Tư Vấn 1-1</span>
+              </>
+            )}
           </button>
         </div>
       </form>

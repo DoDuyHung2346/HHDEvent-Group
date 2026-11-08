@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     logger.info("Application shutting down...")
 
 app = FastAPI(
-    title="EventViet RAG Backend",
+    title="EventHHD RAG Backend",
     version="1.0.0",
     lifespan=lifespan
 )

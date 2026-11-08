@@ -48,22 +48,22 @@ export function generateIcsFile(booking: Booking, companyName: string = "EventVi
   const icsContent = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//EventViet//Event Consultation Calendar//VI",
+    "PRODID:-//EventHHD//Event Consultation Calendar//VI",
     "CALSCALE:GREGORIAN",
     "METHOD:REQUEST",
     "BEGIN:VEVENT",
-    `UID:booking-${booking.id}@eventviet.vn`,
+    `UID:booking-${booking.id}@eventhhd.vn`,
     `DTSTAMP:${now}`,
     `DTSTART:${dtStart}`,
     `DTEND:${dtEnd}`,
-    `SUMMARY:[EventViet] Tư vấn Tổ chức Sự kiện 1-1 (${booking.name})`,
+    `SUMMARY:[EventHHD] Tư vấn Tổ chức Sự kiện 1-1 (${booking.name})`,
     `DESCRIPTION:Buổi tư vấn chuyên sâu cùng Giám đốc Điều phối ${companyName}.\\nKhách hàng: ${booking.name} (${booking.phone})\\nNhu cầu: ${booking.eventType || "Tư vấn sự kiện"}\\nGhi chú: ${booking.notes || "Không có"}`,
-    `LOCATION:Văn phòng EventViet - Bitexco Financial Tower, Quận 1 hoặc Trực tuyến qua Google Meet`,
+    `LOCATION:Văn phòng EventHHD - 144 Xuân Thủy, Phường Cầu Giấy, Hà Nội hoặc Trực tuyến qua Google Meet`,
     "STATUS:CONFIRMED",
     "BEGIN:VALARM",
     "TRIGGER:-PT30M",
     "ACTION:DISPLAY",
-    "DESCRIPTION:Nhắc nhở cuộc hẹn tư vấn sự kiện cùng EventViet trong 30 phút",
+    "DESCRIPTION:Nhắc nhở cuộc hẹn tư vấn sự kiện cùng EventHHD trong 30 phút",
     "END:VALARM",
     "END:VEVENT",
     "END:VCALENDAR",
@@ -73,7 +73,7 @@ export function generateIcsFile(booking: Booking, companyName: string = "EventVi
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.setAttribute("download", `Lich-tu-van-EventViet-${booking.id}.ics`);
+  link.setAttribute("download", `Lich-tu-van-EventHHD-${booking.id}.ics`);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

@@ -10,7 +10,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { loginAdmin } = useAuth();
 
-  const [email, setEmail] = useState("admin@eventviet.vn");
+  const [email, setEmail] = useState("admin@eventhhd.vn");
   const [password, setPassword] = useState("admin2026");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -70,7 +70,7 @@ export default function AdminLoginPage() {
           </div>
           <div>
             <h1 className="text-sm font-bold text-white tracking-wide flex items-center gap-2">
-              <span>EventViet Enterprise Portal</span>
+              <span>EventHHD Enterprise Portal</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-900/60 text-purple-300 border border-purple-700/50">
                 ADMIN CONSOLE
               </span>
@@ -112,7 +112,7 @@ export default function AdminLoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@eventviet.vn"
+                placeholder="admin@eventhhd.vn"
                 className="w-full px-3 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-purple-500 font-mono"
                 required
               />
@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
 
       {/* Footer */}
       <footer className="py-4 text-center text-xs text-slate-600 border-t border-slate-900">
-        © 2026 EventViet Internal Portal. All rights reserved.
+        © 2026 EventHHD Internal Portal. All rights reserved.
       </footer>
     </div>
   );

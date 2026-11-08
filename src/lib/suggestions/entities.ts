@@ -37,7 +37,7 @@ const LOCATIONS: Array<{ label: string; outsideHcm: boolean; patterns: string[] 
 export const ENTITY_TOKENS: ReadonlySet<string> = new Set([
   ...EVENT_TYPES.flatMap((e) => e.patterns),
   ...LOCATIONS.flatMap((l) => l.patterns),
-  "khach", "nguoi", "pax", "eventviet", "demo", "chuc", "kien", "event",
+  "khach", "nguoi", "pax", "eventviet", "eventhhd", "demo", "chuc", "kien", "event",
 ].flatMap((p) => p.split(/[\s-]+/)));
 
 const has = (n: string, patterns: string[]) => patterns.some((p) => n.includes(p));

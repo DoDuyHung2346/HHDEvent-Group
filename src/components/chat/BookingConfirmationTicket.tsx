@@ -19,17 +19,17 @@ export default function BookingConfirmationTicket({
   const shiftLabel = booking.shift === "morning" ? "Ca Sáng" : "Ca Chiều";
 
   const handleAddToGoogleCalendar = () => {
-    const title = encodeURIComponent("[EventViet] Lịch tư vấn sự kiện 1-1");
+    const title = encodeURIComponent("[EventHHD] Lịch tư vấn sự kiện 1-1");
     const details = encodeURIComponent(
       `Khách hàng: ${booking.name}\nSĐT: ${booking.phone}\nLoại hình: ${booking.eventType || "Tư vấn sự kiện"}\nGhi chú: ${booking.notes || "Không có"}\nChuyên viên điều phối: ${staffName} (${staffId}) - Hotline: ${staffPhone}`
     );
-    const location = encodeURIComponent("Văn phòng EventViet - Cầu Giấy, Hà Nội / Online Meet");
+    const location = encodeURIComponent("144 Xuân Thủy, Phường Cầu Giấy, Hà Nội / Online Meet");
     const calUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&details=${details}&location=${location}`;
     window.open(calUrl, "_blank");
   };
 
   const handleDownloadIcs = () => {
-    generateIcsFile(booking, "EventViet");
+    generateIcsFile(booking, "EventHHD");
   };
 
   return (

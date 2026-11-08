@@ -35,17 +35,23 @@ export default function Header({ role }: HeaderProps = {}) {
 
   return (
     <>
-      <header className="w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200 sticky top-0 shrink-0">
+      <header className="w-full z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-purple-100/80 sticky top-0 shrink-0">
         <div className="h-16 sm:h-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Logo and Brand */}
           <div className="flex items-center gap-4 shrink-0">
             <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] text-white flex items-center justify-center font-bold text-sm sm:text-base shadow-md">
-                EV
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-brand-500/10 text-brand-600 flex items-center justify-center font-bold text-sm sm:text-base shadow-xs group-hover:bg-brand-500 group-hover:text-white transition-all">
+                <svg className="w-5 h-5 stroke-current fill-none stroke-[2.2]" viewBox="0 0 24 24">
+                  <path
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-[#191c1e] text-base sm:text-lg leading-tight font-headline-md tracking-tight">
-                  EventViet
+                <span className="font-bold text-[#191c1e] text-base sm:text-lg leading-tight font-headline-md tracking-tight group-hover:text-brand-500 transition-colors">
+                  EventHHD
                 </span>
                 <span className="text-[10px] text-slate-500 font-medium tracking-wide">
                   Tổ Chức Sự Kiện & Hội Nghị Trọn Gói
@@ -55,10 +61,10 @@ export default function Header({ role }: HeaderProps = {}) {
           </div>
 
           {/* AI Live Status Badge */}
-          <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#f2f4f6] border border-slate-200/80 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
+          <div className="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-purple-50/70 border border-purple-100 shadow-[0_1px_4px_rgba(0,0,0,0.03)]">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#4f46e5] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-[#4f46e5]"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
             </span>
             <span className="font-label-md text-label-md text-[#191c1e] text-xs">
               AI Trợ lý trực tuyến 24/7
@@ -71,10 +77,10 @@ export default function Header({ role }: HeaderProps = {}) {
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
                   link.active
-                    ? "bg-[#4f46e5] text-white shadow-sm"
-                    : "text-[#464555] hover:text-[#191c1e] hover:bg-white/80"
+                    ? "bg-white text-brand-600 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
                 }`}
               >
                 <span className="material-symbols-outlined text-[16px]">
@@ -83,76 +89,74 @@ export default function Header({ role }: HeaderProps = {}) {
                 <span>{link.label}</span>
               </Link>
             ))}
+          </nav>
 
+          {/* Right Action & User Profile */}
+          <div className="flex items-center gap-2.5">
+            {/* Lịch Hẹn Của Tôi */}
             <button
               type="button"
               onClick={() => setMyBookingsOpen(true)}
-              className="px-3.5 py-2 text-xs font-semibold rounded-lg text-[#464555] hover:text-[#191c1e] hover:bg-white/80 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-xs transition-colors cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[16px] text-indigo-600">
-                calendar_month
-              </span>
+              <span className="material-symbols-outlined text-[18px] text-brand-600">calendar_month</span>
               <span>Lịch Hẹn Của Tôi</span>
             </button>
-          </nav>
 
-          {/* Right Actions: Notifications & User Account */}
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* Notification Button */}
+            {/* Notifications Dropdown Container */}
             <div className="relative">
               <button
-                onClick={() => setNotificationsOpen(!notificationsOpen)}
-                aria-label="Thông báo"
-                className="relative p-2 rounded-lg text-[#464555] hover:text-[#191c1e] hover:bg-[#eceef0] transition-colors cursor-pointer"
                 type="button"
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 relative transition-colors cursor-pointer"
+                aria-label="Thông báo hệ thống"
               >
-                <span className="material-symbols-outlined text-[20px]">
-                  notifications
-                </span>
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#ba1a1a]"></span>
+                <span className="material-symbols-outlined text-[20px]">notifications</span>
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-brand-500 rounded-full"></span>
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 p-3 z-50 text-xs animate-in fade-in duration-150">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100 font-bold text-slate-800">
-                    <span>Thông báo EventViet</span>
-                    <span
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-900">Thông báo EventHHD</span>
+                    <button
                       onClick={() => setNotificationsOpen(false)}
-                      className="text-[10px] text-[#4f46e5] cursor-pointer hover:underline"
+                      className="text-[11px] text-brand-600 hover:underline cursor-pointer"
                     >
-                      Đã xem
-                    </span>
+                      Đóng
+                    </button>
                   </div>
-                  <div className="space-y-2 mt-2">
-                    <div className="p-2 bg-indigo-50/60 rounded-lg text-slate-700">
-                      <p className="font-semibold text-[#4f46e5]">Ưu đãi đặt lịch sớm</p>
-                      <p className="text-[11px] text-slate-500">Giảm 5% cho sự kiện doanh nghiệp đặt trước 30 ngày.</p>
+                  <div className="space-y-2 text-xs text-slate-600">
+                    <div className="p-2 bg-purple-50/60 rounded-xl border border-purple-100">
+                      <p className="font-semibold text-slate-900">Hotline Doanh nghiệp 24/7</p>
+                      <p className="text-[11px] text-slate-500 mt-0.5">Gọi ngay 1900 6886 để được kết nối chuyên viên trực tiếp.</p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Client User Profile or Login Link */}
+            {/* Auth Session State */}
             {isUserLoggedIn && user ? (
-              <div className="flex items-center gap-2 pl-1 sm:pl-2">
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
                 <button
                   type="button"
                   onClick={() => setMyBookingsOpen(true)}
-                  className="hidden sm:flex flex-col text-right cursor-pointer group"
-                  title="Bấm để xem lịch hẹn đã đặt"
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer text-left"
+                  title="Xem lịch hẹn đã đặt"
                 >
-                  <span className="text-xs text-slate-900 font-bold group-hover:text-indigo-600 transition-colors">
-                    {user.name}
-                  </span>
-                  <span className="text-[10px] text-slate-500 font-mono">
-                    {user.phone}
-                  </span>
+                  <div className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs shadow-xs ring-2 ring-purple-100">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden lg:flex flex-col">
+                    <span className="text-xs font-bold text-slate-800 leading-tight">
+                      {user.name}
+                    </span>
+                    <span className="text-[10px] text-brand-600 font-semibold font-mono">
+                      {user.phone}
+                    </span>
+                  </div>
                 </button>
-
-                <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs ring-2 ring-indigo-100">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
 
                 <button
                   type="button"
@@ -166,7 +170,7 @@ export default function Header({ role }: HeaderProps = {}) {
             ) : (
               <Link
                 href="/login"
-                className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg shadow-xs transition-all flex items-center gap-1"
+                className="px-3.5 py-1.5 bg-slate-900 hover:bg-black text-white text-xs font-bold rounded-full shadow-xs transition-all flex items-center gap-1"
               >
                 <span className="material-symbols-outlined text-[16px]">login</span>
                 <span>Đăng Nhập</span>
@@ -204,13 +208,13 @@ export default function Header({ role }: HeaderProps = {}) {
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-4 rounded-xl text-base font-semibold flex items-center gap-3 transition-colors ${
+                  className={`px-4 py-3 rounded-xl text-sm font-semibold flex items-center gap-3 transition-colors ${
                     link.active
-                      ? "bg-[#4f46e5] text-white shadow-sm"
+                      ? "bg-brand-500 text-white shadow-sm"
                       : "text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  <span className="material-symbols-outlined text-[22px]">
+                  <span className="material-symbols-outlined text-[20px]">
                     {link.icon}
                   </span>
                   <span>{link.label}</span>
@@ -223,9 +227,9 @@ export default function Header({ role }: HeaderProps = {}) {
                   setMobileMenuOpen(false);
                   setMyBookingsOpen(true);
                 }}
-                className="px-4 py-4 rounded-xl text-base font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 flex items-center gap-3 text-left transition-colors cursor-pointer"
+                className="px-4 py-3 rounded-xl text-sm font-semibold text-brand-700 bg-purple-50 hover:bg-purple-100 flex items-center gap-3 text-left transition-colors cursor-pointer"
               >
-                <span className="material-symbols-outlined text-[22px]">calendar_month</span>
+                <span className="material-symbols-outlined text-[20px]">calendar_month</span>
                 <span>Lịch Hẹn Của Tôi</span>
               </button>
             </div>
@@ -249,7 +253,7 @@ export default function Header({ role }: HeaderProps = {}) {
                 <Link
                   href="/login"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="text-indigo-600 font-bold py-2 hover:underline inline-block"
+                  className="text-brand-600 font-bold py-2 hover:underline inline-block"
                 >
                   Đăng nhập tài khoản
                 </Link>

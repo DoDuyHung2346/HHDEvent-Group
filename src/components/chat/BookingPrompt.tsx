@@ -16,7 +16,7 @@ export default function BookingPrompt({ onBook }: BookingPromptProps) {
             CẦN TƯ VẤN KỊCH BẢN & DỰ TOÁN CHI TIẾT?
           </h4>
           <p className="text-slate-700 text-xs mt-0.5 leading-relaxed">
-            Nội dung này cần sự tư vấn chuyên sâu riêng biệt. Chuyên viên EventViet sẵn sàng hỗ trợ khảo sát địa điểm và lên kịch bản báo giá miễn phí 100%.
+            Nội dung này cần sự tư vấn chuyên sâu riêng biệt. Chuyên viên EventHHD sẵn sàng hỗ trợ khảo sát địa điểm và lên kịch bản báo giá miễn phí 100%.
           </p>
           <button
             id="booking-prompt-btn"

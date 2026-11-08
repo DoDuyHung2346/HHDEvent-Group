@@ -11,16 +11,16 @@ def load_popular_questions() -> List[str]:
         with open(POPULAR_QUESTIONS_FILE, "r", encoding="utf-8") as f:
             return yaml.safe_load(f) or []
     return [
-        "EventViet Demo cung cấp những dịch vụ tổ chức sự kiện gì?",
-        "Bảng giá tham khảo các gói sự kiện tại EventViet như thế nào?",
+        "EventHHD cung cấp những dịch vụ tổ chức sự kiện gì?",
+        "Bảng giá tham khảo các gói sự kiện tại EventHHD như thế nào?",
         "Chính sách hủy sự kiện và hoàn tiền cọc quy định ra sao?"
     ]
 
 POPULAR_QUESTIONS = load_popular_questions()
 
 def get_template_response(template_name: str, query: str = "") -> Dict[str, Any]:
-    b_name = company_info.get("business_name", "EventViet Demo")
-    bot_name = company_info.get("bot_name", "EventViet AI")
+    b_name = company_info.get("business_name", "EventHHD")
+    bot_name = company_info.get("bot_name", "EventHHD AI")
     hotline = company_info.get("hotline", "1900 6886")
     hours = company_info.get("working_hours", "08:00–18:00, T2–T7")
 

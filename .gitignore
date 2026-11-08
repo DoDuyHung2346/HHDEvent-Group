@@ -64,3 +64,13 @@ Thumbs.db
 desktop.ini
 .vscode/
 .idea/
+
+# MCP & Stitch Secrets and Assets
+mcp_config.json
+stitch_downloads/
+scripts/download_stitch.py
+scripts/update_brand.py
+
+# SQLite Temporary WAL / SHM
+*.db-shm
+*.db-wal

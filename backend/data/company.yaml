@@ -1,11 +1,11 @@
-business_name: "EventViet Demo"
-bot_name: "EventViet AI"
+business_name: "EventHHD"
+bot_name: "EventHHD AI"
 hotline: "1900 6886"
-email: "contact@eventviet.demo"
-address: "Tầng 5, Tòa nhà EventViet, Cầu Giấy, Hà Nội"
+email: "vip-events@eventhhd.vn"
+address: "144 Xuân Thủy, Phường Cầu Giấy, Hà Nội"
 working_hours: "08:00–18:00, Thứ 2 – Thứ 7"
 tone: "thân thiện, chuyên nghiệp, xưng 'mình/bạn' hoặc 'em/anh/chị'"
 allowed_phones: ["1900 6886", "19006886", "0901234567"]
-allowed_urls: ["https://eventviet.demo", "http://localhost:3000"]
+allowed_urls: ["https://eventhhd.vn", "http://localhost:3000"]
 disclaimer_price: "Giá mang tính tham khảo, nhân viên sẽ báo giá chính xác theo quy mô và thời điểm tổ chức."
 disclaimer_legal: "Thông tin mang tính tổng quát, vui lòng xác nhận với nhân viên/pháp chế trước khi quyết định."

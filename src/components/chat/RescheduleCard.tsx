@@ -5,6 +5,15 @@ import { loadBookings, saveBookings } from "@/lib/booking/storage";
 import { getAvailableWorkDays, generateDaySlots, type TimeSlot } from "@/lib/booking/slots";
 import { MAX_BOOKINGS_PER_SLOT } from "@/lib/constants";
 import type { Booking } from "@/lib/schemas";
+import {
+  CalendarIcon,
+  ClockIcon,
+  PhoneIcon,
+  SearchIcon,
+  CheckCircleIcon,
+  AlertCircleIcon,
+  CloseIcon,
+} from "@/components/shared/FormIcons";
 
 interface RescheduleCardProps {
   onRescheduled?: (booking: Booking) => void;
@@ -100,7 +109,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
     }
 
     if (isSlotFull(selectedTime, selectedDate)) {
-      setError("Khung giờ này vừa có người đặt và đã kín lịch. Vui lòng chọn khung giờ khác.");
+      setError(`Khung giờ ${selectedTime} ngày ${selectedDate} đã đầy lịch.`);
       return;
     }
 
@@ -108,89 +117,110 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
     setError("");
 
     try {
-      const updatedBooking: Booking = {
+      const { bookings } = loadBookings();
+      const updatedList = bookings.map((b) => {
+        if (b.id === selectedBooking.id) {
+          return {
+            ...b,
+            date: selectedDate,
+            time: selectedTime,
+            updatedAt: new Date().toISOString(),
+          };
+        }
+        return b;
+      });
+
+      saveBookings(updatedList);
+      setAllBookings(updatedList);
+
+      const updatedBooking = {
         ...selectedBooking,
         date: selectedDate,
         time: selectedTime,
+        updatedAt: new Date().toISOString(),
       };
 
-      const { bookings } = loadBookings();
-      const updatedList = bookings.map((b) => (b.id === selectedBooking.id ? updatedBooking : b));
-      saveBookings(updatedList);
-      setAllBookings(updatedList);
       setSelectedBooking(updatedBooking);
-
       setStep("confirmed");
-      onRescheduled?.(updatedBooking);
+
+      if (onRescheduled) {
+        onRescheduled(updatedBooking);
+      }
     } catch {
-      setError("Không thể cập nhật lịch hẹn. Vui lòng thử lại.");
+      setError("Có lỗi xảy ra khi cập nhật lịch hẹn. Quý khách vui lòng thử lại.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="p-4 sm:p-5 rounded-xl bg-white border border-indigo-200/90 shadow-md space-y-4 text-slate-800 my-2">
+    <div className="bg-white rounded-2xl border border-indigo-200/90 shadow-md p-4 sm:p-5 space-y-4 my-2 max-w-xl transition-all">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b border-indigo-100">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-indigo-50 text-[#4f46e5] flex items-center justify-center font-bold">
-            <span className="material-symbols-outlined text-[20px]">edit_calendar</span>
+      <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+            <CalendarIcon size={18} />
           </div>
           <div>
-            <h3 className="font-title-md text-sm sm:text-base font-bold text-slate-900">
-              Đổi Lịch Hẹn Tư Vấn 1-1
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+              <span>EventHHD Concierge</span>
+              <span className="text-slate-300">•</span>
+              <span className="text-indigo-600">Đổi Lịch Hẹn Tư Vấn</span>
             </h3>
-            <p className="text-[11px] text-slate-500">Hệ thống tiếp nhận và điều chỉnh lịch trực tuyến</p>
+            <p className="text-[11px] text-slate-500">
+              Tra cứu theo số điện thoại và chọn thời gian hẹn mới phù hợp
+            </p>
           </div>
         </div>
         {onClose && (
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+            className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors flex items-center justify-center cursor-pointer active:scale-95"
             title="Đóng"
           >
-            <span className="material-symbols-outlined text-[18px]">close</span>
+            <CloseIcon size={16} />
           </button>
         )}
       </div>
 
       {/* Error alert */}
       {error && (
-        <div className="p-2.5 rounded-lg bg-red-50 text-red-700 text-xs flex items-center gap-2 border border-red-200">
-          <span className="material-symbols-outlined text-[16px] shrink-0">error</span>
+        <div className="p-3 rounded-xl bg-red-50 text-red-700 text-xs flex items-center gap-2 border border-red-200 animate-in fade-in">
+          <AlertCircleIcon size={16} className="shrink-0 text-red-600" />
           <span>{error}</span>
         </div>
       )}
 
       {/* STEP 1: Tra cứu theo số điện thoại */}
       {step === "lookup" && (
-        <form onSubmit={handleLookup} className="space-y-3">
+        <form onSubmit={handleLookup} className="space-y-3.5">
           <p className="text-xs text-slate-600">
             Quý khách vui lòng nhập số điện thoại đã sử dụng khi đăng ký tư vấn để hệ thống tra cứu lịch hẹn:
           </p>
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-700">Số điện thoại:</label>
+            <label className="text-xs font-semibold text-slate-700">Số điện thoại:</label>
             <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                <PhoneIcon size={17} />
+              </div>
               <input
                 type="tel"
+                inputMode="tel"
+                autoComplete="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="Ví dụ: 0912345678"
-                className="w-full px-3 py-2 pl-9 bg-slate-50 border border-slate-300 rounded-lg text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#4f46e5]"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-base sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#4f46e5]/20 focus:border-[#4f46e5] min-h-[46px] transition-all"
                 required
               />
-              <span className="material-symbols-outlined absolute left-2.5 top-2.5 text-slate-400 text-[18px]">
-                call
-              </span>
             </div>
           </div>
           <button
             type="submit"
-            className="w-full py-2.5 px-4 bg-[#4f46e5] hover:bg-[#3525cd] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="w-full py-3 px-4 bg-[#4f46e5] hover:bg-[#3525cd] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer min-h-[46px]"
           >
-            <span className="material-symbols-outlined text-[17px]">search</span>
+            <SearchIcon size={17} />
             <span>Tra cứu lịch hẹn</span>
           </button>
         </form>
@@ -206,10 +236,9 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
             <button
               type="button"
               onClick={() => setStep("lookup")}
-              className="text-xs text-indigo-600 hover:underline flex items-center gap-0.5 cursor-pointer"
+              className="text-xs text-indigo-600 hover:underline flex items-center gap-1 cursor-pointer font-semibold"
             >
-              <span className="material-symbols-outlined text-[14px]">arrow_back</span>
-              <span>Đổi SĐT khác</span>
+              <span>← Đổi SĐT khác</span>
             </button>
           </div>
           <div className="space-y-2 max-h-56 overflow-y-auto">
@@ -217,11 +246,11 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
               <div
                 key={b.id}
                 onClick={() => handleSelectBooking(b)}
-                className="p-3 rounded-lg border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-all cursor-pointer space-y-1"
+                className="p-3 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40 transition-all cursor-pointer space-y-1 active:scale-[0.99]"
               >
                 <div className="flex items-center justify-between">
                   <span className="font-semibold text-xs text-indigo-700">#{b.id}</span>
-                  <span className="text-[11px] font-mono font-medium text-slate-900 bg-slate-100 px-2 py-0.5 rounded">
+                  <span className="text-[11px] font-mono font-medium text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
                     {b.time} • {b.date}
                   </span>
                 </div>
@@ -238,14 +267,14 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
       {/* STEP 3: Chọn ngày và khung giờ mới */}
       {step === "select_slot" && selectedBooking && (
         <div className="space-y-4">
-          <div className="p-2.5 rounded-lg bg-indigo-50/70 border border-indigo-100 text-xs text-indigo-900 flex items-center justify-between">
+          <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-150 text-xs text-indigo-900 flex items-center justify-between">
             <div>
               <span className="font-semibold">Lịch hiện tại:</span> {selectedBooking.time} ngày {selectedBooking.date}
             </div>
             <button
               type="button"
               onClick={() => (foundBookings.length > 1 ? setStep("select_booking") : setStep("lookup"))}
-              className="text-[11px] text-indigo-700 hover:underline font-medium cursor-pointer"
+              className="text-[11px] text-indigo-700 hover:underline font-semibold cursor-pointer"
             >
               Quay lại
             </button>
@@ -253,10 +282,11 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
 
           {/* Chọn ngày mới */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-700 block">
-              1. Chọn ngày làm việc mới (Thứ 2 - Thứ 7):
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <CalendarIcon size={14} className="text-indigo-600 shrink-0" />
+              <span>1. Chọn ngày làm việc mới:</span>
             </label>
-            <div className="flex gap-1.5 overflow-x-auto pb-1.5 scrollbar-thin">
+            <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none py-1 touch-pan-x -webkit-overflow-scrolling-touch">
               {availableDays.slice(0, 7).map((day) => {
                 const { dayName, dateFormatted } = formatDayDisplay(day);
                 const isSelected = selectedDate === day;
@@ -268,14 +298,14 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
                       setSelectedDate(day);
                       setError("");
                     }}
-                    className={`px-2.5 py-1.5 rounded-lg border text-center shrink-0 transition-all cursor-pointer ${
+                    className={`px-3 py-2 rounded-xl border text-center shrink-0 min-w-[62px] min-h-[50px] flex flex-col items-center justify-center transition-all cursor-pointer select-none active:scale-95 ${
                       isSelected
-                        ? "bg-[#4f46e5] text-white border-[#4f46e5] shadow-xs"
+                        ? "bg-[#4f46e5] text-white border-[#4f46e5] shadow-xs font-bold scale-[1.02]"
                         : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
                     }`}
                   >
-                    <div className="text-[10px] opacity-80">{dayName}</div>
-                    <div className="text-xs font-bold font-mono">{dateFormatted}</div>
+                    <span className="text-[10px] opacity-80 uppercase">{dayName}</span>
+                    <span className="text-xs font-bold font-mono mt-0.5">{dateFormatted}</span>
                   </button>
                 );
               })}
@@ -284,10 +314,11 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
 
           {/* Chọn giờ mới */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-700 block">
-              2. Chọn khung giờ mới (8:00 - 17:00, 30 phút/phiên):
+            <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+              <ClockIcon size={14} className="text-indigo-600 shrink-0" />
+              <span>2. Chọn khung giờ mới (30 phút/phiên):</span>
             </label>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-1.5 max-h-40 overflow-y-auto p-1 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-1.5 max-h-44 sm:max-h-40 overflow-y-auto p-1.5 bg-slate-50 rounded-xl border border-slate-200">
               {daySlots.map((slot) => {
                 const full = isSlotFull(slot.time, selectedDate);
                 const isSelected = selectedTime === slot.time;
@@ -300,15 +331,15 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
                       setSelectedTime(slot.time);
                       setError("");
                     }}
-                    className={`py-1.5 px-1 rounded text-center text-xs font-mono transition-all cursor-pointer ${
+                    className={`py-2 px-1 rounded-lg text-center text-xs font-mono transition-all cursor-pointer min-h-[44px] flex flex-col items-center justify-center select-none active:scale-95 ${
                       full
-                        ? "bg-slate-200 text-slate-400 cursor-not-allowed line-through"
+                        ? "bg-slate-200 text-slate-400 cursor-not-allowed line-through opacity-60"
                         : isSelected
-                        ? "bg-[#4f46e5] text-white font-bold shadow-xs"
+                        ? "bg-[#4f46e5] text-white font-bold shadow-xs scale-[1.02]"
                         : "bg-white text-slate-800 hover:bg-indigo-50 border border-slate-200"
                     }`}
                   >
-                    {slot.label}
+                    <span>{slot.label}</span>
                   </button>
                 );
               })}
@@ -316,11 +347,11 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
           </div>
 
           {/* Nút xác nhận */}
-          <div className="pt-2 flex items-center justify-end gap-2">
+          <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => (foundBookings.length > 1 ? setStep("select_booking") : setStep("lookup"))}
-              className="px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer min-h-[44px] sm:min-h-0 order-2 sm:order-1"
             >
               Hủy
             </button>
@@ -328,10 +359,16 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
               type="button"
               disabled={!selectedDate || !selectedTime || isSubmitting}
               onClick={handleConfirm}
-              className="px-4 py-2 bg-[#4f46e5] hover:bg-[#3525cd] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-1.5 disabled:opacity-40 cursor-pointer"
+              className="px-5 py-2.5 bg-[#4f46e5] hover:bg-[#3525cd] active:scale-[0.99] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 disabled:opacity-40 cursor-pointer min-h-[46px] sm:min-h-0 order-1 sm:order-2"
             >
-              <span className="material-symbols-outlined text-[16px]">check_circle</span>
-              <span>{isSubmitting ? "Đang cập nhật..." : "Xác nhận đổi lịch"}</span>
+              {isSubmitting ? (
+                <span>Đang cập nhật...</span>
+              ) : (
+                <>
+                  <CheckCircleIcon size={16} />
+                  <span>Xác nhận đổi lịch</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -340,15 +377,15 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
       {/* STEP 4: Thành công */}
       {step === "confirmed" && selectedBooking && (
         <div className="space-y-3.5 py-1">
-          <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-2">
+          <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 space-y-2">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-emerald-600 text-[22px]">verified</span>
+              <CheckCircleIcon size={22} className="text-emerald-600 shrink-0" />
               <span className="font-bold text-sm text-emerald-950">Đổi lịch hẹn thành công!</span>
             </div>
             <p className="text-xs text-emerald-800 leading-relaxed">
-              Lịch hẹn của Quý khách đã được cập nhật lại trên hệ thống điều phối EventViet.
+              Lịch hẹn của Quý khách đã được cập nhật lại trên hệ thống điều phối EventHHD.
             </p>
-            <div className="p-2.5 bg-white/90 rounded-lg border border-emerald-100 text-xs text-slate-800 space-y-1">
+            <div className="p-3 bg-white/90 rounded-xl border border-emerald-100 text-xs text-slate-800 space-y-1">
               <div>
                 <span className="font-semibold text-slate-600">Khách hàng:</span> {selectedBooking.name} ({selectedBooking.phone})
               </div>
@@ -367,7 +404,7 @@ export function RescheduleCard({ onRescheduled, onClose, initialPhone = "" }: Re
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 bg-[#4f46e5] hover:bg-[#3525cd] text-white text-xs font-semibold rounded-lg shadow-xs transition-colors cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 bg-[#4f46e5] hover:bg-[#3525cd] text-white text-xs sm:text-sm font-semibold rounded-xl shadow-xs transition-colors cursor-pointer min-h-[44px]"
             >
               Hoàn tất
             </button>

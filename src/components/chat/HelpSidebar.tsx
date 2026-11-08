@@ -48,7 +48,7 @@ export default function HelpSidebar({
       {/* Sidebar Header */}
       <div className="flex items-center justify-between p-3 rounded-xl bg-white shadow-xs border border-slate-200">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-[#4f46e5] text-[20px]">
+          <span className="material-symbols-outlined text-brand-500 text-[20px]">
             view_sidebar
           </span>
           <div className="flex flex-col">
@@ -67,7 +67,7 @@ export default function HelpSidebar({
             className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#f2f4f6] hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-all shadow-xs border border-slate-200"
             title="Ẩn taskbar trợ giúp"
           >
-            <span className="material-symbols-outlined text-[15px] text-[#4f46e5]">
+            <span className="material-symbols-outlined text-[15px] text-brand-500">
               chevron_right
             </span>
             <span>Ẩn</span>
@@ -78,7 +78,7 @@ export default function HelpSidebar({
       {/* Block 1: Quick FAQ by Category */}
       <div className="p-4 rounded-xl bg-white shadow-xs border border-slate-200 space-y-3">
         <div className="flex items-center gap-2 text-slate-900 font-bold text-xs pb-1 border-b border-slate-100">
-          <span className="material-symbols-outlined text-[#4f46e5] text-[18px]">
+          <span className="material-symbols-outlined text-brand-500 text-[18px]">
             quiz
           </span>
           <span>Tra cứu câu hỏi nhanh</span>
@@ -93,7 +93,7 @@ export default function HelpSidebar({
               onClick={() => setActiveCategory(c.id)}
               className={`p-2 rounded-lg text-[11px] font-medium flex items-center gap-1.5 text-left transition-all border ${
                 activeCategory === c.id
-                  ? "bg-indigo-50/80 text-[#3525cd] border-indigo-200 font-semibold"
+                  ? "bg-indigo-50/80 text-brand-600 border-indigo-200 font-semibold"
                   : "bg-slate-50 text-slate-600 hover:bg-slate-100 border-slate-200/60"
               }`}
             >
@@ -112,9 +112,9 @@ export default function HelpSidebar({
               key={idx}
               type="button"
               onClick={() => onSelectQuestion?.(q)}
-              className="w-full text-left p-2 rounded-lg bg-[#f7f9fb] hover:bg-indigo-50/60 hover:text-[#4f46e5] text-slate-700 text-xs transition-colors border border-slate-200/60 flex items-start gap-1.5 group cursor-pointer"
+              className="w-full text-left p-2 rounded-lg bg-[#f7f9fb] hover:bg-indigo-50/60 hover:text-brand-500 text-slate-700 text-xs transition-colors border border-slate-200/60 flex items-start gap-1.5 group cursor-pointer"
             >
-              <span className="material-symbols-outlined text-[15px] text-[#4f46e5] shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform">
+              <span className="material-symbols-outlined text-[15px] text-brand-500 shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform">
                 arrow_forward_ios
               </span>
               <span className="leading-snug">{q}</span>
@@ -134,7 +134,7 @@ export default function HelpSidebar({
 
         <div className="grid grid-cols-1 gap-2 text-xs">
           <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[#4f46e5] text-[18px] shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-brand-500 text-[18px] shrink-0 mt-0.5">
               lock
             </span>
             <div>
@@ -144,7 +144,7 @@ export default function HelpSidebar({
           </div>
 
           <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[#4f46e5] text-[18px] shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-brand-500 text-[18px] shrink-0 mt-0.5">
               bolt
             </span>
             <div>
@@ -154,7 +154,7 @@ export default function HelpSidebar({
           </div>
 
           <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[#4f46e5] text-[18px] shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-brand-500 text-[18px] shrink-0 mt-0.5">
               supervisor_account
             </span>
             <div>
@@ -164,7 +164,7 @@ export default function HelpSidebar({
           </div>
 
           <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-start gap-2.5">
-            <span className="material-symbols-outlined text-[#4f46e5] text-[18px] shrink-0 mt-0.5">
+            <span className="material-symbols-outlined text-brand-500 text-[18px] shrink-0 mt-0.5">
               price_check
             </span>
             <div>
@@ -176,7 +176,7 @@ export default function HelpSidebar({
       </div>
 
       {/* Block 3: Hotline SOS & Trực ban 24/7 */}
-      <div className="p-4 rounded-xl bg-gradient-to-br from-indigo-900 to-[#1e1b4b] text-white shadow-md space-y-3">
+      <div className="p-4 rounded-xl bg-gradient-to-br from-[#1e1b4b] to-[#0f172a] text-white shadow-md space-y-3">
         <div className="flex items-center justify-between pb-1 border-b border-white/10">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-amber-400 text-[18px]">
@@ -201,11 +201,11 @@ export default function HelpSidebar({
 
           <div className="pt-1 text-[11px] text-slate-300 space-y-1">
             <p className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[14px] text-indigo-300">location_on</span>
-              <span>Tầng 28, Pearl Plaza, TP.HCM</span>
+              <span className="material-symbols-outlined text-[14px] text-purple-300">location_on</span>
+              <span>144 Xuân Thủy, Phường Cầu Giấy, Hà Nội</span>
             </p>
             <p className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[14px] text-indigo-300">mail</span>
+              <span className="material-symbols-outlined text-[14px] text-purple-300">mail</span>
               <span>vip-events@eventhhd.vn</span>
             </p>
           </div>

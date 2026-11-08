@@ -92,7 +92,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffMo
               placeholder="Ví dụ: Nguyễn Văn An"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base sm:text-sm min-h-[46px] sm:min-h-0 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
             />
           </div>
 
@@ -106,7 +106,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffMo
                 placeholder="Ví dụ: EV-005 (để trống tự sinh)"
                 value={id}
                 onChange={(e) => setId(e.target.value.toUpperCase())}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base sm:text-sm min-h-[46px] sm:min-h-0 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-mono"
               />
             </div>
 
@@ -120,7 +120,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffMo
                 placeholder="0912345678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base sm:text-sm min-h-[46px] sm:min-h-0 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all font-mono"
               />
             </div>
           </div>
@@ -132,7 +132,7 @@ export default function AddStaffModal({ isOpen, onClose, onSuccess }: AddStaffMo
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as StaffRole)}
-              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
+              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-base sm:text-sm min-h-[46px] sm:min-h-0 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 outline-none transition-all bg-white"
             >
               <option value="consultant_wedding">Tiệc cưới, Sinh nhật & YEP (Chuyên viên tiệc cưới)</option>
               <option value="consultant_corporate">Hội nghị, Hội thảo & Lễ Khai trương (Chuyên viên Doanh nghiệp)</option>

@@ -21,9 +21,9 @@ const RECENCY = [1, 0.6, 0.35, 0.2];
 const MIN_LEN = 8;
 const MAX_LEN = 80;
 const EVERGREEN = [
-  "EventViet Demo cung cấp những dịch vụ gì?",
-  "Chi phí tổ chức sự kiện tại EventViet là bao nhiêu?",
-  "Quy trình làm việc với EventViet như thế nào?",
+  "EventHHD cung cấp những dịch vụ gì?",
+  "Chi phí tổ chức sự kiện tại EventHHD là bao nhiêu?",
+  "Quy trình làm việc với EventHHD như thế nào?",
 ];
 
 /** Các câu user, MỚI NHẤT TRƯỚC (index 0 = câu hiện tại). */
@@ -71,7 +71,7 @@ function entityCandidates(e: ConversationEntities, turnCount: number): Candidate
   if (e.location) {
     if (e.outsideHcm)
       add(`Phí di chuyển đến ${e.location} được tính thế nào?`, 1.05, "entity-loc");
-    else add(`EventViet hỗ trợ tìm địa điểm ở ${e.location} không?`, 1.0, "entity-loc");
+    else add(`EventHHD hỗ trợ tìm địa điểm ở ${e.location} không?`, 1.0, "entity-loc");
   }
 
   // CTA đặt lịch: lên điểm khi hội thoại đã "ấm". GIỮ cụm "tư vấn 1-1" (xem lưu ý mục 9)

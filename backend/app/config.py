@@ -107,8 +107,8 @@ class Settings(BaseSettings):
             with open(company_path, "r", encoding="utf-8") as f:
                 return yaml.safe_load(f) or {}
         return {
-            "business_name": "EventViet Demo",
-            "bot_name": "EventViet AI",
+            "business_name": "EventHHD",
+            "bot_name": "EventHHD AI",
             "hotline": "1900 6886",
             "email": "contact@eventviet.demo",
             "working_hours": "08:00–18:00, T2–T7",

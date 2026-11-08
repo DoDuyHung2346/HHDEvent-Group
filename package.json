@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "concurrently -k -n FRONTEND,BACKEND -c cyan,magenta \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "next dev --webpack",
+    "dev:frontend": "next dev --webpack -H 0.0.0.0",
     "dev:backend": "node scripts/ensure-backend.mjs && python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload",
     "install:backend": "python -m pip install -r backend/requirements.txt",
     "configure:vilao": "node scripts/configure-vilao.mjs",

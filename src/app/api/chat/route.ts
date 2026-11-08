@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
           id: "zalo",
           label: "Nhắn Zalo OA",
           action: "link",
-          payload: "https://zalo.me/eventviet",
+          payload: "https://zalo.me/eventhhd",
         },
         {
           id: "book-urgent",
@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
         },
       ],
       related_questions: [
-        "Giờ làm việc của EventViet?",
+        "Giờ làm việc của EventHHD?",
         "Có hỗ trợ ngoài giờ không?",
         "Liên hệ chuyên viên qua kênh nào?",
       ],
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
       const answer =
         ragData.answer ||
         (isOutOfScope
-          ? "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventViet. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp."
+          ? "Dạ thưa Quý khách, nội dung này hiện nằm ngoài danh mục tài liệu và thông tin sự kiện hiện có của EventHHD. Quý khách có thể liên hệ hotline 1900 6886 hoặc chọn đặt lịch tư vấn 1-1 bên dưới để được chuyên viên hỗ trợ trực tiếp."
           : "");
 
       // Fallback của RAG với câu hỏi vẫn thuộc lĩnh vực là một yêu cầu cần
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
 
       const defaultOptions = [
         { id: "opt-1", label: "Tìm hiểu thêm", action: "ask" as const, payload: "Bạn có thể cho tôi biết thêm chi tiết không?" },
-        { id: "opt-2", label: "Xem dịch vụ", action: "ask" as const, payload: "EventViet cung cấp những dịch vụ gì?" },
+        { id: "opt-2", label: "Xem dịch vụ", action: "ask" as const, payload: "EventHHD cung cấp những dịch vụ gì?" },
       ];
 
       const followUps =

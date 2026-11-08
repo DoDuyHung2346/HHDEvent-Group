@@ -24,7 +24,7 @@ export const DOCUMENTS: KBDocument[] = [
       "sức chứa",
       "giá thuê",
     ],
-    content: `Tổng hợp các trung tâm hội nghị và khách sạn 5 sao hàng đầu tại TP. Hồ Chí Minh do EventViet trực tiếp liên kết và điều phối:
+    content: `Tổng hợp các trung tâm hội nghị và khách sạn 5 sao hàng đầu tại TP. Hồ Chí Minh do EventHHD trực tiếp liên kết và điều phối:
 
 1. GEM Center:
 - Địa chỉ: Số 8 Nguyễn Bỉnh Khiêm, Phường Đa Kao, Quận 1, TP.HCM.
@@ -158,7 +158,7 @@ export const DOCUMENTS: KBDocument[] = [
       "phương án dự phòng",
       "kỹ thuật outdoor",
     ],
-    content: `Hướng dẫn tổ chức và danh mục địa điểm ngoài trời do EventViet khảo sát và vận hành:
+    content: `Hướng dẫn tổ chức và danh mục địa điểm ngoài trời do EventHHD khảo sát và vận hành:
 
 1. Các hình thức không gian ngoài trời tiêu biểu:
 - Biệt thự ven sông Thảo Điền & An Phú (Quận 2, TP.HCM): Sân cỏ sức chứa 100 - 350 khách, không gian mở riêng tư, bến du thuyền đón khách. Giá thuê địa điểm: 40.000.000 - 90.000.000 VNĐ / ngày.
@@ -171,7 +171,7 @@ export const DOCUMENTS: KBDocument[] = [
 - Thách thức: Phụ thuộc 100% vào điều kiện thời tiết (mưa rào bất chợt, nắng gắt, gió lớn ảnh hưởng âm thanh), côn trùng, âm thanh dễ bị loãng, yêu cầu bảo vệ an ninh và cấp điện ngoài trời phức tạp.
 
 3. Quy định bắt buộc về Kế hoạch Dự phòng (Plan B):
-- EventViet luôn thiết lập phương án mái che bạt căng không gian hoặc nhà bạt trong suốt (Transparent Tent) khi tổ chức mùa mưa từ tháng 5 đến tháng 11.
+- EventHHD luôn thiết lập phương án mái che bạt căng không gian hoặc nhà bạt trong suốt (Transparent Tent) khi tổ chức mùa mưa từ tháng 5 đến tháng 11.
 - Dự phòng sảnh tiệc trong nhà tại cùng địa điểm có thể chuyển đổi trong vòng 30 phút.
 - Hệ thống tủ điện tổng ngoài trời trang bị aptomat chống giật chống nước IP67 tiêu chuẩn an toàn lao động.
 - Xin cấp phép âm thanh và quy định giới hạn độ ồn khu dân cư sau 22h00 theo luật định.`,
@@ -192,7 +192,7 @@ export const DOCUMENTS: KBDocument[] = [
       "overtime",
       "hợp đồng venue",
     ],
-    content: `Checklist 20 tiêu chí kỹ thuật do Project Manager EventViet trực tiếp sử dụng khi khảo sát bất kỳ sảnh tiệc hay địa điểm sự kiện nào:
+    content: `Checklist 20 tiêu chí kỹ thuật do Project Manager EventHHD trực tiếp sử dụng khi khảo sát bất kỳ sảnh tiệc hay địa điểm sự kiện nào:
 
 1. Sức chứa thực tế theo layout: Đánh giá sức chứa chính xác theo kiểu Theater (rạp hát), Classroom (lớp học) hoặc Banquet (bàn tiệc tròn 10 người), tránh tình trạng chật chội lối đi phục vụ.
 2. Chiều cao trần (Ceiling Height): Trần sảnh tối thiểu phải từ 4.5m trở lên để dựng màn hình LED lớn và treo đèn sân khấu; kiểm tra kỹ các góc khuất do cột trụ lớn che chắn tầm nhìn khách.
@@ -233,7 +233,7 @@ export const DOCUMENTS: KBDocument[] = [
       "trang trí hoa tươi",
       "kịch bản tiệc cưới",
     ],
-    content: `Bảng giá dịch vụ cưới trọn gói tại EventViet cập nhật mới nhất cho mùa cưới 2026:
+    content: `Bảng giá dịch vụ cưới trọn gói tại EventHHD cập nhật mới nhất cho mùa cưới 2026:
 
 1. Gói Cơ Bản (Mức chi phí: 150.000.000 - 250.000.000 VNĐ):
 - Quy mô phù hợp: Tiệc cưới ấm cúng khoảng 100 - 150 khách mời.
@@ -413,7 +413,7 @@ export const DOCUMENTS: KBDocument[] = [
       "bánh cưới",
       "gói đồ uống",
     ],
-    content: `Chi tiết bảng giá dịch vụ ẩm thực (Food & Beverage) do EventViet cùng các đối tác bếp hàng đầu thực hiện:
+    content: `Chi tiết bảng giá dịch vụ ẩm thực (Food & Beverage) do EventHHD cùng các đối tác bếp hàng đầu thực hiện:
 
 1. Tiệc Teabreak & Welcome Cocktail:
 - Gói Teabreak hội nghị tiêu chuẩn: 80.000 - 180.000 VNĐ / người.
@@ -453,7 +453,7 @@ export const DOCUMENTS: KBDocument[] = [
   // ── PROCESS & POLICY (5 tài liệu) ──────────────────────────────────────────
   {
     id: "doc-process-detailed",
-    title: "Quy trình làm việc chuẩn 6 bước và timeline thực thi dự án sự kiện tại EventViet",
+    title: "Quy trình làm việc chuẩn 6 bước và timeline thực thi dự án sự kiện tại EventHHD",
     category: "process",
     tags: [
       "quy trình",
@@ -502,7 +502,7 @@ export const DOCUMENTS: KBDocument[] = [
       "tranh chấp",
       "luật áp dụng",
     ],
-    content: `Các điều khoản pháp lý cốt lõi trong hợp đồng kinh tế giữa EventViet và khách hàng:
+    content: `Các điều khoản pháp lý cốt lõi trong hợp đồng kinh tế giữa EventHHD và khách hàng:
 
 1. Phạm vi cung cấp dịch vụ (Scope of Services):
 Mọi hạng mục thiết bị, nhân sự, số lượng và thông số kỹ thuật được liệt kê chi tiết trong Phụ lục đính kèm Hợp đồng. Bất kỳ sự thay đổi phát sinh ngoài phụ lục phải được hai bên xác nhận bằng văn bản hoặc Phụ lục bổ sung trước khi triển khai ít nhất 03 ngày làm việc.
@@ -513,18 +513,18 @@ Mọi hạng mục thiết bị, nhân sự, số lượng và thông số kỹ 
 - Thanh toán đúng và đủ giá trị hợp đồng theo các đợt đã thỏa thuận.
 - Hỗ trợ cung cấp giấy tờ pháp lý cần thiết nếu tổ chức tại trụ sở hoặc địa điểm riêng của Bên A.
 
-3. Quyền và nghĩa vụ của Bên B (EventViet):
+3. Quyền và nghĩa vụ của Bên B (EventHHD):
 - Đảm bảo toàn bộ trang thiết bị kỹ thuật đúng chất lượng, thương hiệu và thông số đã cam kết trong hợp đồng.
 - Bố trí nhân sự chuyên nghiệp, đúng tác phong, có mặt đúng giờ và điều hành sự kiện theo đúng kịch bản đã được Bên A phê duyệt.
 - Chịu trách nhiệm bảo đảm an toàn lao động, an toàn điện và phòng cháy chữa cháy trong suốt quá trình thi công và thu dọn hiện trường.
-- Bồi thường thiệt hại trực tiếp nếu vi phạm nghiêm trọng cam kết tiến độ hoặc chất lượng do lỗi chủ quan của EventViet.
+- Bồi thường thiệt hại trực tiếp nếu vi phạm nghiêm trọng cam kết tiến độ hoặc chất lượng do lỗi chủ quan của EventHHD.
 
 4. Điều khoản Bất khả kháng (Force Majeure):
 - Các sự kiện bất khả kháng bao gồm: thiên tai bão lũ cấp độ cảnh báo đỏ, động đất, hỏa hoạn không do lỗi các bên, chiến tranh, hoặc lệnh cấm tụ tập khẩn cấp của Thủ tướng/Ủy ban nhân dân do dịch bệnh nguy hiểm.
 - Khi xảy ra trường hợp bất khả kháng, bên bị ảnh hưởng phải thông báo bằng văn bản cho bên kia trong vòng 24 giờ. Hai bên cùng nhau thiện chí thỏa thuận dời ngày tổ chức sự kiện mà không phải chịu bất kỳ khoản tiền phạt vi phạm nào; các chi phí nguyên vật liệu thực tế đã gia công hoàn thiện không thể hủy sẽ được hai bên chia sẻ trên tinh thần tương trợ.
 
 5. Quyền sở hữu trí tuệ (Intellectual Property):
-Tất cả các ý tưởng concept, thiết kế đồ họa 3D, kịch bản độc quyền do EventViet sáng tạo thuộc quyền sở hữu trí tuệ của EventViet cho đến khi Hợp đồng được thanh toán hoàn tất. EventViet được quyền sử dụng tư liệu hình ảnh và video ghi lại tại sự kiện cho mục đích lưu trữ portfolio truyền thông (trừ phi có thỏa thuận bảo mật văn bản riêng của khách hàng).
+Tất cả các ý tưởng concept, thiết kế đồ họa 3D, kịch bản độc quyền do EventHHD sáng tạo thuộc quyền sở hữu trí tuệ của EventHHD cho đến khi Hợp đồng được thanh toán hoàn tất. EventHHD được quyền sử dụng tư liệu hình ảnh và video ghi lại tại sự kiện cho mục đích lưu trữ portfolio truyền thông (trừ phi có thỏa thuận bảo mật văn bản riêng của khách hàng).
 
 6. Điều khoản Bảo mật thông tin (NDA):
 Hai bên cam kết giữ bí mật tuyệt đối về giá trị hợp đồng, chiến lược sản phẩm mới của khách hàng, bài phát biểu nội bộ và danh sách thông tin khách mời tham dự.
@@ -547,7 +547,7 @@ Hợp đồng được điều chỉnh theo pháp luật nước CHXHCN Việt N
       "pos",
       "tài khoản công ty",
     ],
-    content: `Chính sách tài chính minh bạch và tiến độ giải ngân tại EventViet:
+    content: `Chính sách tài chính minh bạch và tiến độ giải ngân tại EventHHD:
 
 1. Tiến độ thanh toán 3 đợt tiêu chuẩn:
 - Đợt 1 - Đặt cọc giữ lịch (30% tổng giá trị hợp đồng):
@@ -558,12 +558,12 @@ Hợp đồng được điều chỉnh theo pháp luật nước CHXHCN Việt N
   Thực hiện trong vòng từ 03 đến 05 ngày làm việc sau khi sự kiện kết thúc thành công và hai bên ký kết Biên bản nghiệm thu bàn giao dịch vụ.
 
 2. Phương thức thanh toán được chấp nhận:
-- Chuyển khoản ngân hàng chính thức: Khách hàng chuyển khoản vào tài khoản pháp nhân Công ty TNHH Giải pháp Sự kiện EventViet (Ngân hàng Thương mại Cổ phần Ngoại thương Việt Nam - Vietcombank Chi nhánh TP.HCM hoặc Ngân hàng Quân Đội - MB Bank).
+- Chuyển khoản ngân hàng chính thức: Khách hàng chuyển khoản vào tài khoản pháp nhân Công ty TNHH Giải pháp Sự kiện EventHHD (Ngân hàng Thương mại Cổ phần Ngoại thương Việt Nam - Vietcombank Chi nhánh TP.HCM hoặc Ngân hàng Quân Đội - MB Bank).
 - Thanh toán quẹt thẻ qua máy POS tại văn phòng: Hỗ trợ thẻ ATM nội địa, thẻ tín dụng Visa, Mastercard, JCB, American Express (áp dụng phí quẹt thẻ theo quy định ngân hàng liên kết).
 
 3. Quy định xuất Hóa đơn Giá trị gia tăng (VAT):
-- Tất cả các báo giá tiêu chuẩn của EventViet đều là giá chưa bao gồm thuế GTGT (VAT 8% hoặc 10% tùy theo quy định hiện hành của cơ quan thuế đối với từng nhóm dịch vụ).
-- EventViet xuất hóa đơn điện tử hợp lệ gửi trực tiếp qua email của khách hàng hoặc bộ phận kế toán doanh nghiệp trong vòng 03 ngày làm việc sau khi nhận đủ tiền thanh toán đợt cuối.
+- Tất cả các báo giá tiêu chuẩn của EventHHD đều là giá chưa bao gồm thuế GTGT (VAT 8% hoặc 10% tùy theo quy định hiện hành của cơ quan thuế đối với từng nhóm dịch vụ).
+- EventHHD xuất hóa đơn điện tử hợp lệ gửi trực tiếp qua email của khách hàng hoặc bộ phận kế toán doanh nghiệp trong vòng 03 ngày làm việc sau khi nhận đủ tiền thanh toán đợt cuối.
 - Khách hàng có trách nhiệm cung cấp chính xác Tên công ty, Mã số thuế và Địa chỉ đăng ký kinh doanh theo giấy phép.`,
   },
   {
@@ -586,7 +586,7 @@ Hợp đồng được điều chỉnh theo pháp luật nước CHXHCN Việt N
 
 1. Chính sách Hủy bỏ dịch vụ từ phía Khách hàng:
 - Hủy trước ngày diễn ra sự kiện từ 90 ngày trở lên:
-  Khách hàng được hoàn trả lại 70% số tiền cọc đã thanh toán. EventViet giữ lại 30% tiền cọc để bù đắp các chi phí khảo sát thực địa, nhân công lên ý tưởng concept, bản vẽ 3D và các chi phí hành chính ban đầu.
+  Khách hàng được hoàn trả lại 70% số tiền cọc đã thanh toán. EventHHD giữ lại 30% tiền cọc để bù đắp các chi phí khảo sát thực địa, nhân công lên ý tưởng concept, bản vẽ 3D và các chi phí hành chính ban đầu.
 - Hủy trước ngày diễn ra sự kiện từ 60 đến dưới 90 ngày:
   Khách hàng được hoàn trả lại 50% số tiền cọc đã thanh toán.
 - Hủy trước ngày diễn ra sự kiện từ 30 đến dưới 60 ngày:
@@ -598,15 +598,15 @@ Hợp đồng được điều chỉnh theo pháp luật nước CHXHCN Việt N
 
 2. Chính sách Dời ngày tổ chức (Reschedule):
 - Thông báo đổi lịch trước ít nhất 14 ngày làm việc:
-  Khách hàng được MIỄN PHÍ dời lịch 01 lần trong vòng tối đa 06 tháng kể từ ngày dự kiến ban đầu (với điều kiện ngày mới còn trống lịch của venue và đội ngũ kỹ thuật EventViet).
+  Khách hàng được MIỄN PHÍ dời lịch 01 lần trong vòng tối đa 06 tháng kể từ ngày dự kiến ban đầu (với điều kiện ngày mới còn trống lịch của venue và đội ngũ kỹ thuật EventHHD).
 - Thông báo đổi lịch từ 07 đến dưới 14 ngày trước sự kiện:
   Áp dụng mức phí hỗ trợ dời lịch là 10% tổng giá trị hợp đồng (chi phí bồi hoàn ngày công nhân sự và nhà cung cấp đã khóa lịch phục vụ riêng cho bạn).
 - Thông báo đổi lịch dưới 07 ngày:
-  Trường hợp này được xem xét giải quyết tương đương chính sách hủy gấp; tuy nhiên EventViet sẽ nỗ lực tối đa thương lượng cùng venue và nghệ sĩ để giảm thiểu thiệt hại chi phí cho khách hàng.`,
+  Trường hợp này được xem xét giải quyết tương đương chính sách hủy gấp; tuy nhiên EventHHD sẽ nỗ lực tối đa thương lượng cùng venue và nghệ sĩ để giảm thiểu thiệt hại chi phí cho khách hàng.`,
   },
   {
     id: "doc-faq-extended",
-    title: "Bộ 20 câu hỏi giải đáp mở rộng về dịch vụ và vận hành sự kiện tại EventViet",
+    title: "Bộ 20 câu hỏi giải đáp mở rộng về dịch vụ và vận hành sự kiện tại EventHHD",
     category: "process",
     tags: [
       "faq",
@@ -622,52 +622,52 @@ Hợp đồng được điều chỉnh theo pháp luật nước CHXHCN Việt N
     ],
     content: `Bộ 20 câu hỏi và câu trả lời mở rộng giải quyết chi tiết mọi thắc mắc của khách hàng:
 
-Câu 1: EventViet có mua bảo hiểm cho khách tham gia sự kiện không?
-Trả lời: Có. Đối với các sự kiện quy mô từ 500 khách trở lên hoặc các hoạt động Team building bãi biển vận động mạnh, EventViet luôn tư vấn và cung cấp gói bảo hiểm trách nhiệm công cộng (Public Liability Insurance) với hạn mức bồi thường lên tới 10 tỷ đồng để bảo vệ an toàn cho mọi người tham dự.
+Câu 1: EventHHD có mua bảo hiểm cho khách tham gia sự kiện không?
+Trả lời: Có. Đối với các sự kiện quy mô từ 500 khách trở lên hoặc các hoạt động Team building bãi biển vận động mạnh, EventHHD luôn tư vấn và cung cấp gói bảo hiểm trách nhiệm công cộng (Public Liability Insurance) với hạn mức bồi thường lên tới 10 tỷ đồng để bảo vệ an toàn cho mọi người tham dự.
 
 Câu 2: Tôi có thể tự mời MC hoặc ca sĩ riêng của công ty tôi được không?
-Trả lời: Hoàn toàn được. EventViet sẽ hỗ trợ tiếp nhận kịch bản, làm việc trực tiếp với MC/nghệ sĩ riêng của bạn để phổ biến timeline, hỗ trợ soundcheck âm thanh và chạy khớp chương trình trong buổi tổng duyệt.
+Trả lời: Hoàn toàn được. EventHHD sẽ hỗ trợ tiếp nhận kịch bản, làm việc trực tiếp với MC/nghệ sĩ riêng của bạn để phổ biến timeline, hỗ trợ soundcheck âm thanh và chạy khớp chương trình trong buổi tổng duyệt.
 
 Câu 3: Nếu chương trình bị kéo dài quá giờ dự kiến thì tính phí phát sinh thế nào?
 Trả lời: Phí ngoài giờ (overtime) tính theo thời gian thực tế: Ekip âm thanh ánh sáng và điều phối tính từ 500.000 - 1.500.000 VNĐ/giờ tùy quy mô dàn máy; chi phí ngoài giờ của venue sẽ tính đúng theo hóa đơn quy định của ban quản lý địa điểm đó.
 
 Câu 4: Khi tổ chức tiệc ngoài trời gặp mưa bão bất ngờ thì xử lý ra sao?
-Trả lời: EventViet luôn có Plan B dự phòng: thiết lập sẵn nhà bạt không gian hoặc mái che di động, bọc chống nước toàn bộ dây điện và thiết bị âm thanh, chuẩn bị sẵn ô dù cầm tay đón khách từ bãi xe vào tiệc.
+Trả lời: EventHHD luôn có Plan B dự phòng: thiết lập sẵn nhà bạt không gian hoặc mái che di động, bọc chống nước toàn bộ dây điện và thiết bị âm thanh, chuẩn bị sẵn ô dù cầm tay đón khách từ bãi xe vào tiệc.
 
-Câu 5: EventViet có hỗ trợ thủ tục xin giấy phép tổ chức biểu diễn không?
-Trả lời: Có, bộ phận pháp lý của EventViet sẽ thay mặt khách hàng soạn hồ sơ, nộp và hoàn tất thủ tục xin giấy phép biểu diễn nghệ thuật, treo băng rôn quảng cáo tại Sở Văn hóa Thể thao và Du lịch các tỉnh thành.
+Câu 5: EventHHD có hỗ trợ thủ tục xin giấy phép tổ chức biểu diễn không?
+Trả lời: Có, bộ phận pháp lý của EventHHD sẽ thay mặt khách hàng soạn hồ sơ, nộp và hoàn tất thủ tục xin giấy phép biểu diễn nghệ thuật, treo băng rôn quảng cáo tại Sở Văn hóa Thể thao và Du lịch các tỉnh thành.
 
 Câu 6: Khách hàng có được mang rượu hoặc bia từ ngoài vào sảnh tiệc không?
-Trả lời: Được, tuy nhiên hầu hết các khách sạn 5 sao sẽ áp dụng phí phục vụ khui mở chai (corkage fee). EventViet với vai trò đối tác thân thiết sẽ giúp bạn đàm phán giảm từ 30% đến 50% mức phí này.
+Trả lời: Được, tuy nhiên hầu hết các khách sạn 5 sao sẽ áp dụng phí phục vụ khui mở chai (corkage fee). EventHHD với vai trò đối tác thân thiết sẽ giúp bạn đàm phán giảm từ 30% đến 50% mức phí này.
 
 Câu 7: Thời gian trả hình ảnh và video clip hoàn chỉnh sau sự kiện là bao lâu?
 Trả lời: File ảnh gốc demo trả trong vòng 24 giờ sau sự kiện; toàn bộ ảnh chỉnh màu chất lượng cao trả sau 3-5 ngày; clip teaser highlight 3 phút trả sau 5 ngày và video full show hoàn chỉnh trả sau 7 ngày làm việc.
 
-Câu 8: EventViet có nhận thi công gian hàng triển lãm đơn lẻ không?
+Câu 8: EventHHD có nhận thi công gian hàng triển lãm đơn lẻ không?
 Trả lời: Có, xưởng cơ khí và mộc mỹ thuật của chúng tôi nhận thi công cả gian hàng tiêu chuẩn lẫn gian hàng thiết kế đặc biệt theo bản vẽ 3D của khách hàng.
 
 Câu 9: Đặt lịch hẹn tư vấn và khảo sát địa điểm có tốn chi phí không?
-Trả lời: Hoàn toàn MIỄN PHÍ. Chuyên viên tư vấn của EventViet sẽ đến tận văn phòng của bạn hoặc hẹn gặp trực tiếp tại địa điểm dự kiến tổ chức để khảo sát và tư vấn chi tiết.
+Trả lời: Hoàn toàn MIỄN PHÍ. Chuyên viên tư vấn của EventHHD sẽ đến tận văn phòng của bạn hoặc hẹn gặp trực tiếp tại địa điểm dự kiến tổ chức để khảo sát và tư vấn chi tiết.
 
 Câu 10: Tôi có thể thay đổi số lượng bàn tiệc và món ăn trước bao nhiêu ngày?
 Trả lời: Quý khách có thể chốt tăng giảm số lượng bàn tiệc và điều chỉnh món ăn trước ngày diễn ra sự kiện tối thiểu 07 ngày làm việc để bộ phận bếp kịp chuẩn bị nguyên liệu tươi ngon nhất.
 
-Câu 11: Đội ngũ kỹ thuật viên của EventViet có mặt tại sảnh trước bao lâu?
+Câu 11: Đội ngũ kỹ thuật viên của EventHHD có mặt tại sảnh trước bao lâu?
 Trả lời: Đội ngũ kỹ thuật luôn có mặt trước giờ đón khách từ 4 đến 8 tiếng đối với sự kiện vừa và trước 24 tiếng đối với các đại nhạc hội lớn để lắp đặt và test thiết bị kỹ lưỡng.
 
-Câu 12: EventViet có cung cấp hệ thống dịch cabin đa ngôn ngữ không?
+Câu 12: EventHHD có cung cấp hệ thống dịch cabin đa ngôn ngữ không?
 Trả lời: Có, chúng tôi cung cấp cabin dịch cách âm tiêu chuẩn châu Âu kèm tai nghe hồng ngoại đa kênh không dây phục vụ các hội thảo quốc tế song ngữ hoặc đa ngữ.
 
 Câu 13: Quy trình xuất hóa đơn giá trị gia tăng (VAT) được tiến hành như thế nào?
 Trả lời: Sau khi thanh toán quyết toán và ký biên bản nghiệm thu, hóa đơn điện tử hợp lệ theo chuẩn thông tư của Tổng cục Thuế sẽ được gửi qua email kế toán của bạn trong vòng 3 ngày làm việc.
 
 Câu 14: Tôi có thể thuê riêng từng hạng mục như âm thanh, ánh sáng hay backdrop không?
-Trả lời: Có, EventViet sẵn sàng cho thuê lẻ từng hạng mục thiết bị hoặc hỗ trợ thi công backdrop riêng lẻ theo đúng nhu cầu của quý khách.
+Trả lời: Có, EventHHD sẵn sàng cho thuê lẻ từng hạng mục thiết bị hoặc hỗ trợ thi công backdrop riêng lẻ theo đúng nhu cầu của quý khách.
 
 Câu 15: Tôi có phải cọc tiền trước khi nhận bản vẽ thiết kế 3D không?
 Trả lời: Bản vẽ concept ý tưởng sơ bộ là hoàn toàn miễn phí. Đối với bản vẽ kỹ thuật 3D phối cảnh không gian chi tiết, khách hàng tạm ứng phí cam kết thiết kế từ 5 đến 10 triệu đồng; số tiền này sẽ được trừ 100% vào giá trị hợp đồng khi ký kết chính thức.
 
-Câu 16: EventViet có cung cấp PG, lễ tân nam nữ đón khách không?
+Câu 16: EventHHD có cung cấp PG, lễ tân nam nữ đón khách không?
 Trả lời: Có, đội ngũ PG/PB của chúng tôi ngoại hình đẹp, chiều cao chuẩn (nữ từ 1m68, nam từ 1m78), trang phục áo dài truyền thống hoặc vest hiện đại đồng bộ, kỹ năng giao tiếp tiếng Anh tốt.
 
 Câu 17: Nếu số lượng khách tham dự thực tế tăng đột biến vượt dự kiến thì xử lý ra sao?
@@ -676,7 +676,7 @@ Trả lời: Bếp đối tác luôn chuẩn bị nguồn thực phẩm dự ph�
 Câu 18: Tôi có thể thanh toán dịch vụ bằng thẻ tín dụng quốc tế Visa/Mastercard không?
 Trả lời: Có, văn phòng chúng tôi trang bị máy quẹt POS hỗ trợ tất cả các dòng thẻ Visa, Mastercard, JCB, thẻ ghi nợ nội địa Napas.
 
-Câu 19: EventViet có nhận tổ chức sự kiện tại Phú Quốc, Côn Đảo hay Nha Trang không?
+Câu 19: EventHHD có nhận tổ chức sự kiện tại Phú Quốc, Côn Đảo hay Nha Trang không?
 Trả lời: Có, chúng tôi đã có nhiều năm kinh nghiệm điều phối container thiết bị ra các đảo và tỉnh xa, đồng thời kết nối chặt chẽ với các resort 5 sao lớn tại Phú Quốc, Nha Trang, Hạ Long.
 
 Câu 20: Làm thế nào để tôi được làm việc với một Project Manager phụ trách riêng?
@@ -686,7 +686,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
   // ── TEAM & SERVICES (5 tài liệu) ──────────────────────────────────────────
   {
     id: "doc-team",
-    title: "Hồ sơ năng lực đội ngũ chuyên gia và nhân sự quản lý chủ chốt tại EventViet",
+    title: "Hồ sơ năng lực đội ngũ chuyên gia và nhân sự quản lý chủ chốt tại EventHHD",
     category: "team",
     tags: [
       "nhân sự",
@@ -700,7 +700,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
       "phạm đức long",
       "lịch hẹn trống",
     ],
-    content: `Giới thiệu đội ngũ nhân sự lãnh đạo và chuyên gia điều hành trực tiếp các dự án tại EventViet:
+    content: `Giới thiệu đội ngũ nhân sự lãnh đạo và chuyên gia điều hành trực tiếp các dự án tại EventHHD:
 
 1. Vũ Hoàng Nam - Senior Project Manager (8 năm kinh nghiệm):
 - Chuyên môn: Điều hành đại sự kiện doanh nghiệp quy mô lớn, Year-End Party, Lễ kỷ niệm thành lập tập đoàn và Hội nghị thượng đỉnh công nghệ (từng quản lý sự kiện cho FPT, Viettel, Vingroup).
@@ -729,7 +729,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
   },
   {
     id: "doc-mc-list",
-    title: "Danh bạ 10 MC chuyên nghiệp hợp tác chiến lược cùng EventViet và biểu phí",
+    title: "Danh bạ 10 MC chuyên nghiệp hợp tác chiến lược cùng EventHHD và biểu phí",
     category: "team",
     tags: [
       "mc",
@@ -741,7 +741,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
       "báo giá mc",
       "dẫn chương trình",
     ],
-    content: `Danh sách 10 MC tài năng được EventViet tuyển chọn hợp tác độc quyền và liên kết chiến lược:
+    content: `Danh sách 10 MC tài năng được EventHHD tuyển chọn hợp tác độc quyền và liên kết chiến lược:
 
 1. MC Hoàng Nam (8 năm kinh nghiệm, Song ngữ Anh - Việt):
 - Phong cách: Lịch lãm, đĩnh đạc, phát âm tiếng Anh chuẩn bản ngữ, kỹ năng phỏng vấn tương tác sân khấu xuất sắc.
@@ -795,7 +795,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
   },
   {
     id: "doc-catering",
-    title: "Thông tin chi tiết 5 đơn vị đối tác Catering ẩm thực chiến lược của EventViet",
+    title: "Thông tin chi tiết 5 đơn vị đối tác Catering ẩm thực chiến lược của EventHHD",
     category: "team",
     tags: [
       "catering",
@@ -808,7 +808,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
       "ẩm thực",
       "thực đơn",
     ],
-    content: `Hồ sơ 5 đơn vị đối tác cung ứng dịch vụ ẩm thực (Catering) liên kết chiến lược cùng EventViet:
+    content: `Hồ sơ 5 đơn vị đối tác cung ứng dịch vụ ẩm thực (Catering) liên kết chiến lược cùng EventHHD:
 
 1. Deli Western Cuisine:
 - Phong cách chủ đạo: Ẩm thực Âu - Mỹ hiện đại, các món steak bò nướng lò than hoa, gan ngỗng áp chảo, mì Ý làm tay tươi và hải sản Địa Trung Hải.
@@ -861,7 +861,7 @@ Trả lời: Ngay khi bạn đặt lịch tư vấn và xác nhận thông tin c
       "cinematic",
       "báo giá media",
     ],
-    content: `Chi tiết 4 gói dịch vụ Media quay phim, chụp ảnh phóng sự và truyền thông sự kiện do EventViet cung cấp:
+    content: `Chi tiết 4 gói dịch vụ Media quay phim, chụp ảnh phóng sự và truyền thông sự kiện do EventHHD cung cấp:
 
 1. Gói Media Cơ Bản (Chi phí: 5.000.000 VNĐ):
 - Phù hợp với: Tiệc sinh nhật gia đình, hội thảo nửa ngày hoặc lễ khai trương cửa hàng nhỏ.

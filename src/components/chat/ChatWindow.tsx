@@ -204,6 +204,7 @@ export default function ChatWindow({
   const [isListening, setIsListening] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
   const [activeQuote, setActiveQuote] = useState<QuoteSnapshot | null>(null);
+  const [showMobileMoreMenu, setShowMobileMoreMenu] = useState(false);
 
   const recognitionRef = useRef<ISpeechRecognition | null>(null);
 
@@ -335,7 +336,7 @@ export default function ChatWindow({
       if (hasBookingIntent) {
         setTimeout(() => {
           const responseText =
-            "Dạ vâng, để chuẩn bị kịch bản chu đáo và báo giá chuẩn xác nhất, em xin gửi Quý khách phiếu đặt lịch tư vấn 1-1 với Giám đốc Điều phối EventViet:";
+            "Dạ vâng, để chuẩn bị kịch bản chu đáo và báo giá chuẩn xác nhất, em xin gửi Quý khách phiếu đặt lịch tư vấn 1-1 với Giám đốc Điều phối EventHHD:";
           setMessages((prev) => [
             ...prev,
             {
@@ -512,7 +513,7 @@ export default function ChatWindow({
         {
           id: `ai-form-${Date.now()}`,
           sender: "ai",
-          text: "Dạ vâng, em xin gửi phiếu đăng ký tư vấn 1-1 trực tiếp cùng Giám đốc Điều phối EventViet:",
+          text: "Dạ vâng, em xin gửi phiếu đăng ký tư vấn 1-1 trực tiếp cùng Giám đốc Điều phối EventHHD:",
           time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
           type: "booking_form",
           needsBooking: true,
@@ -553,7 +554,7 @@ export default function ChatWindow({
       type: "text",
     };
 
-    const aiSummaryText = `Dạ thưa Quý khách, EventViet đã ghi nhận cấu hình yêu cầu của Quý khách với tổng dự toán tạm tính là ${formatVnd(
+    const aiSummaryText = `Dạ thưa Quý khách, EventHHD đã ghi nhận cấu hình yêu cầu của Quý khách với tổng dự toán tạm tính là ${formatVnd(
       quote.subtotal
     )} (${formatVnd(quote.min)} – ${formatVnd(quote.max)}). Quý khách có thể đặt lịch tư vấn 1-1 để hoàn tất hợp đồng hoặc chỉnh sửa lại yêu cầu:`;
 
@@ -607,7 +608,7 @@ export default function ChatWindow({
       {
         id: `confirmed-${Date.now()}`,
         sender: "ai",
-        text: "Chúc mừng Quý khách! Lịch hẹn tư vấn 1-1 đã được hệ thống EventViet ghi nhận thành công:",
+        text: "Chúc mừng Quý khách! Lịch hẹn tư vấn 1-1 đã được hệ thống EventHHD ghi nhận thành công:",
         time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
         type: "booking_confirmed",
         bookingData: booking,
@@ -636,12 +637,12 @@ export default function ChatWindow({
     const transcript = messages
       .map(
         (m) =>
-          `[${m.time}] ${m.sender === "ai" ? "Trợ lý AI EventViet" : "Khách hàng"}: ${m.text}`
+          `[${m.time}] ${m.sender === "ai" ? "Trợ lý AI EventHHD" : "Khách hàng"}: ${m.text}`
       )
       .join("\n\n");
     const blob = new Blob(
       [
-        `BIÊN BẢN TƯ VẤN SỰ KIỆN - EVENTVIET DEMO\nNgày: ${new Date().toLocaleDateString(
+        `BIÊN BẢN TƯ VẤN SỰ KIỆN - EVENTHHD\nNgày: ${new Date().toLocaleDateString(
           "vi-VN"
         )}\nTổng số lượt trao đổi: ${messages.length}\n\n${transcript}`,
       ],
@@ -652,7 +653,7 @@ export default function ChatWindow({
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Bien-ban-tu-van-EventViet-${Date.now()}.txt`;
+    a.download = `Bien-ban-tu-van-EventHHD-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -766,11 +767,11 @@ export default function ChatWindow({
     { text: "Có hỗ trợ MC song ngữ & kịch bản không?", icon: "mic" },
     { text: "Ưu đãi cho khách hàng doanh nghiệp?", icon: "corporate_fare" },
     { text: "Địa điểm và sảnh tiệc 5 sao liên kết?", icon: "domain" },
-    { text: "Khu vực phục vụ sự kiện của EventViet?", icon: "location_on" },
+    { text: "Khu vực phục vụ sự kiện của EventHHD?", icon: "location_on" },
   ];
 
   return (
-    <section className="flex flex-col h-[100dvh] max-h-[100dvh] lg:h-full lg:max-h-full bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-w-0 transition-all">
+    <section className="flex flex-col h-full flex-1 min-h-0 bg-white rounded-xl sm:rounded-2xl shadow-sm border border-purple-200/80 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 overflow-hidden min-w-0 transition-all">
       {/* Hidden file input */}
       <input
         type="file"
@@ -789,93 +790,145 @@ export default function ChatWindow({
       />
 
       {/* Header of Chat Window */}
-      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3 bg-[#f2f4f6] border-b border-slate-200/80 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-5 py-2.5 sm:py-3 bg-brand-50/70 border-b border-purple-100/80 backdrop-blur-sm shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] text-white flex items-center justify-center shadow-sm">
-              <span className="material-symbols-outlined text-[24px]">cognition</span>
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-brand-600 via-purple-600 to-brand-400 p-[2px] shadow-sm">
+              <div className="w-full h-full bg-slate-900 rounded-[14px] overflow-hidden flex items-center justify-center text-white">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-purple-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                </svg>
+              </div>
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
           </div>
-          <div className="truncate">
+          <div className="min-w-0 truncate">
             <div className="flex items-center gap-1.5">
               <span className="font-title-md text-xs sm:text-sm text-slate-900 font-bold truncate">
-                Trợ lý AI Tư vấn Sự kiện 24/7 (EventViet)
+                Trợ lý AI EventHHD
               </span>
               <span
-                className="material-symbols-outlined text-[#4f46e5] text-[16px] shrink-0"
+                className="material-symbols-outlined text-brand-500 text-[15px] sm:text-[16px] shrink-0"
                 title="Đã chứng thực"
               >
                 verified
               </span>
             </div>
-            <p className="font-body-sm text-[11px] text-[#464555] flex items-center gap-1.5 truncate">
-              <span>Hỗ trợ RAG FAQ & Báo giá tức thì</span>
-              <span className="text-slate-300">•</span>
-              <span className="text-emerald-700 font-medium">Đặt lịch tư vấn 1-1 trực tiếp</span>
+            <p className="font-body-sm text-[10px] sm:text-[11px] text-[#464555] flex items-center gap-1.5 truncate">
+              <span className="sm:hidden text-emerald-600 font-semibold flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block animate-pulse"></span>
+                <span>Trực tuyến 24/7</span>
+              </span>
+              <span className="hidden sm:inline">Hỗ trợ RAG FAQ & Báo giá tức thì</span>
+              <span className="hidden sm:inline text-slate-300">•</span>
+              <span className="hidden sm:inline text-emerald-700 font-medium">Đặt lịch tư vấn 1-1 trực tiếp</span>
             </p>
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Action Controls - Mobile Minimal vs Desktop Full */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Nút xem lịch sử trò chuyện */}
-          <button
-            type="button"
-            onClick={() => setShowChatHistory(true)}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
-            title="Xem lịch sử trò chuyện"
-          >
-            <span className="material-symbols-outlined text-[15px] text-[#4f46e5]">history</span>
-            <span className="hidden md:inline">Lịch sử chat</span>
-          </button>
+          {/* Mobile More Options Dropdown Button (3 dots) */}
+          <div className="relative md:hidden">
+            <button
+              type="button"
+              onClick={() => setShowMobileMoreMenu(!showMobileMoreMenu)}
+              className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-2xs active:scale-95 cursor-pointer"
+              title="Tùy chọn thêm"
+            >
+              <span className="material-symbols-outlined text-[18px]">more_vert</span>
+            </button>
 
-          <button
-            type="button"
-            onClick={handleExportChat}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
-            title="Xuất biên bản cuộc trò chuyện"
-          >
-            <span className="material-symbols-outlined text-[15px] text-[#4f46e5]">download</span>
-            <span className="hidden md:inline">Xuất biên bản</span>
-          </button>
+            {showMobileMoreMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowMobileMoreMenu(false)}
+                />
+                <div className="absolute right-0 top-10 z-50 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 text-xs text-slate-800 animate-in fade-in zoom-in-95 duration-150">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowChatHistory(true);
+                      setShowMobileMoreMenu(false);
+                    }}
+                    className="w-full px-3.5 py-2 text-left hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[16px] text-brand-500">history</span>
+                    <span>Lịch sử trò chuyện</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleExportChat();
+                      setShowMobileMoreMenu(false);
+                    }}
+                    className="w-full px-3.5 py-2 text-left hover:bg-slate-50 flex items-center gap-2 cursor-pointer font-medium"
+                  >
+                    <span className="material-symbols-outlined text-[16px] text-brand-500">download</span>
+                    <span>Xuất biên bản chat</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleResetChat();
+                      setShowMobileMoreMenu(false);
+                    }}
+                    className="w-full px-3.5 py-2 text-left hover:bg-red-50 text-red-600 flex items-center gap-2 cursor-pointer font-medium border-t border-slate-100"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                    <span>Làm mới hội thoại</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
 
-          <button
-            type="button"
-            onClick={handleResetChat}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
-            title="Làm mới cuộc trò chuyện"
-          >
-            <span className="material-symbols-outlined text-[15px] text-slate-500">
-              restart_alt
-            </span>
-            <span className="hidden md:inline">Làm mới</span>
-          </button>
-
+          {/* Help Sidebar Trigger Button (both mobile & desktop) */}
           {onToggleSidebar && (
-            <>
-              {/* Nút toggle HelpSidebar trên mobile (icon ?) */}
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                className="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#4f46e5] border border-indigo-200 shadow-xs transition-all cursor-pointer"
-                title="Hỗ trợ & Câu hỏi thường gặp"
-                aria-label="Hỗ trợ & Câu hỏi thường gặp"
-              >
-                <span className="material-symbols-outlined text-[18px]">help_outline</span>
-              </button>
-
-              {/* Nút toggle HelpSidebar trên desktop */}
-              <button
-                type="button"
-                onClick={onToggleSidebar}
-                className="hidden lg:inline-flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-[#4f46e5] border border-indigo-200 shadow-xs transition-all cursor-pointer"
-                title="Ẩn / Hiện thanh câu hỏi thường gặp bên phải"
-              >
-                <span className="material-symbols-outlined text-[18px]">dock_to_right</span>
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={onToggleSidebar}
+              className="w-8 h-8 rounded-lg bg-purple-50 hover:bg-purple-100 text-brand-600 border border-purple-200 shadow-2xs flex items-center justify-center transition-all cursor-pointer active:scale-95"
+              title="Hỗ trợ & Câu hỏi mẫu"
+              aria-label="Hỗ trợ & Câu hỏi mẫu"
+            >
+              <span className="material-symbols-outlined text-[18px]">help_outline</span>
+            </button>
           )}
+
+          {/* Desktop Full Actions (Hidden on Mobile) */}
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowChatHistory(true)}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
+              title="Xem lịch sử trò chuyện"
+            >
+              <span className="material-symbols-outlined text-[15px] text-brand-500">history</span>
+              <span>Lịch sử chat</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleExportChat}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
+              title="Xuất biên bản cuộc trò chuyện"
+            >
+              <span className="material-symbols-outlined text-[15px] text-brand-500">download</span>
+              <span>Xuất biên bản</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetChat}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 rounded-lg transition-colors border border-slate-200 shadow-xs cursor-pointer"
+              title="Làm mới cuộc trò chuyện"
+            >
+              <span className="material-symbols-outlined text-[15px] text-slate-500">restart_alt</span>
+              <span>Làm mới</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -883,17 +936,19 @@ export default function ChatWindow({
       <div
         ref={scrollRef}
         onScroll={onScroll}
-        className="p-3 sm:p-5 pb-4 space-y-4 overflow-y-auto bg-slate-50/50 flex-1 min-h-0"
+        className="p-3 sm:p-5 pb-4 space-y-4 overflow-y-auto bg-[#FBFBFE] flex-1 min-h-0"
       >
         {/* Welcome Greeting Card with initial FAQ Chips */}
         <div className="flex items-start gap-3 max-w-3xl">
-          <div className="w-9 h-9 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-            <span className="material-symbols-outlined text-[19px]">hotel_class</span>
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+            <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+            </svg>
           </div>
           <div className="space-y-3 flex-1 min-w-0">
-            <div className="p-4 rounded-xl bg-white text-slate-900 border border-slate-200 shadow-xs space-y-1">
-              <p className="font-title-md text-sm text-[#3525cd] font-bold">
-                Kính chào Quý khách đến với EventViet!
+            <div className="p-4 rounded-xl bg-white text-slate-900 border border-purple-100 shadow-xs space-y-1">
+              <p className="font-title-md text-sm text-brand-600 font-bold">
+                Kính chào Quý khách đến với EventHHD!
               </p>
               <p className="font-body-md text-xs sm:text-sm text-slate-700 leading-relaxed">
                 Em là <strong>Trợ lý AI Eve</strong>. Em có thể giải đáp chính sách dịch vụ, tính toán
@@ -910,9 +965,9 @@ export default function ChatWindow({
                   key={idx}
                   type="button"
                   onClick={() => handleUserSendMessage(chip.text)}
-                  className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs shadow-xs transition-all text-left flex items-center gap-1.5 cursor-pointer hover:border-indigo-300"
+                  className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 text-xs shadow-xs transition-all text-left flex items-center gap-1.5 cursor-pointer hover:border-brand-300 hover:text-brand-600"
                 >
-                  <span className="material-symbols-outlined text-[#4f46e5] text-[15px]">
+                  <span className="material-symbols-outlined text-brand-500 text-[15px]">
                     {chip.icon}
                   </span>
                   <span>{chip.text}</span>
@@ -928,28 +983,30 @@ export default function ChatWindow({
             {msg.sender === "user" ? (
               /* User Bubble */
               <div className="flex justify-end items-end gap-2.5">
-                <div className="max-w-[85%] sm:max-w-[75%] p-3.5 sm:p-4 rounded-xl rounded-br-xs bg-[#4f46e5] text-white shadow-sm">
+                <div className="max-w-[85%] sm:max-w-[75%] p-3.5 sm:p-4 rounded-xl rounded-br-xs bg-brand-500 text-white shadow-sm">
                   <p className="font-body-md text-xs sm:text-sm leading-relaxed whitespace-pre-line">
                     {msg.text}
                   </p>
                   <div className="text-right mt-1">
-                    <span className="font-mono text-[10px] text-indigo-200">{msg.time}</span>
+                    <span className="font-mono text-[10px] text-purple-200">{msg.time}</span>
                   </div>
                 </div>
-                <div className="w-8 h-8 rounded-full bg-[#dae2fd] text-[#131b2e] flex items-center justify-center shrink-0 font-bold text-xs shadow-xs">
+                <div className="w-8 h-8 rounded-full bg-purple-100 text-brand-700 flex items-center justify-center shrink-0 font-bold text-xs shadow-xs">
                   KH
                 </div>
               </div>
             ) : (
               /* AI Bubble */
               <div className="flex items-start gap-2.5 sm:gap-3 max-w-[92%] sm:max-w-[85%] lg:max-w-3xl">
-                <div className="w-9 h-9 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                  <span className="material-symbols-outlined text-[19px]">hotel_class</span>
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                  </svg>
                 </div>
                 <div className="space-y-3 flex-1 min-w-0">
-                  <div className="p-4 rounded-xl bg-white text-slate-900 border border-slate-200 shadow-xs space-y-2">
+                  <div className="p-4 rounded-xl bg-white text-slate-900 border border-purple-100 shadow-xs space-y-2">
                     <div className="flex items-center justify-between pb-1 border-b border-slate-100 text-[11px] text-slate-500">
-                      <span className="font-semibold text-indigo-600">EventViet AI Advisor</span>
+                      <span className="font-semibold text-brand-600">EventHHD AI Advisor</span>
                       {msg.source && (
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-slate-100 text-slate-600 border border-slate-200">
                           {msg.source === "ai" ? "Trí tuệ nhân tạo (LLM)" : "Tri thức xác thực"}
@@ -1096,9 +1153,11 @@ export default function ChatWindow({
         {/* Loading Indicator */}
         {isLoading && (
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#4f46e5] text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-              <span className="material-symbols-outlined text-[19px]">hotel_class</span>
-            </div>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+                  </svg>
+                </div>
             <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
               <TypingIndicator />
             </div>
@@ -1107,30 +1166,66 @@ export default function ChatWindow({
       </div>
 
       {/* Chat Input & Command Console */}
-      <div className="p-3 bg-[#f2f4f6] border-t border-slate-200 shrink-0 sticky bottom-0 z-10">
+      <div className="p-2 sm:p-3 bg-[#f2f4f6] border-t border-slate-200 shrink-0 sticky bottom-0 z-10 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
         <form
-          className="space-y-2"
+          className="space-y-1.5 sm:space-y-2"
           onSubmit={(e) => {
             e.preventDefault();
             handleUserSendMessage();
           }}
         >
-          <div className="relative flex items-center bg-white rounded-xl shadow-xs border border-slate-200/90 overflow-hidden p-1.5">
+          {/* Quick Suggestion Pills (Like CapCut Mobile horizontal tags) */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none touch-pan-x -webkit-overflow-scrolling-touch text-[11px]">
+            <button
+              type="button"
+              onClick={() => handleUserSendMessage("Tôi muốn gặp chuyên viên tư vấn trực tiếp 1-1")}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+            >
+              <span>📅</span>
+              <span>Đặt lịch 1-1</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUserSendMessage("Khoảng giá tham khảo các gói sự kiện thế nào?")}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+            >
+              <span>💰</span>
+              <span>Báo giá tham khảo</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUserSendMessage("Gói Year-end Party gồm những hạng mục nào?")}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+            >
+              <span>🎉</span>
+              <span>Year-end Party</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => handleUserSendMessage("Quy trình đặt cọc và thanh toán hợp đồng sự kiện?")}
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+            >
+              <span>📋</span>
+              <span>Hợp đồng & Đặt cọc</span>
+            </button>
+          </div>
+
+          <div className="relative flex items-center bg-white rounded-2xl shadow-xs border border-purple-200/80 focus-within:border-brand-500 focus-within:ring-2 focus-within:ring-brand-500/20 overflow-hidden p-1 sm:p-1.5">
             {/* Action buttons on left */}
-            <div className="flex items-center gap-0.5 pl-1">
+            <div className="flex items-center gap-0.5 pl-0.5 sm:pl-1">
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer active:scale-95 shrink-0"
                 title="Đính kèm tài liệu Brief hoặc RFP sự kiện (.pdf, .txt, .docx)"
               >
-                <span className="material-symbols-outlined text-[18px]">attach_file</span>
+                <span className="material-symbols-outlined text-[19px]">attach_file</span>
               </button>
 
               <button
                 type="button"
                 onClick={toggleVoice}
-                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                className={`w-8 h-8 sm:w-8 sm:h-8 flex items-center justify-center rounded-lg transition-all cursor-pointer active:scale-95 shrink-0 ${
                   isListening
                     ? "bg-red-50 text-red-600 animate-pulse ring-1 ring-red-400"
                     : "text-slate-500 hover:text-[#4f46e5] hover:bg-slate-100"
@@ -1141,7 +1236,7 @@ export default function ChatWindow({
                     : "Nói bằng giọng nói tiếng Việt (Web Speech AI)"
                 }
               >
-                <span className="material-symbols-outlined text-[18px]">
+                <span className="material-symbols-outlined text-[19px]">
                   {isListening ? "mic_in_browser" : "mic"}
                 </span>
               </button>
@@ -1154,45 +1249,30 @@ export default function ChatWindow({
               onChange={(e) => setInputVal(e.target.value)}
               placeholder={
                 isListening
-                  ? "Đang lắng nghe giọng nói của Quý khách..."
-                  : "Nhập câu hỏi hoặc yêu cầu tư vấn sự kiện (ví dụ: thực đơn tiệc, âm thanh ánh sáng)..."
+                  ? "Đang lắng nghe..."
+                  : "Nhập tin nhắn tư vấn..."
               }
-              className="flex-1 px-3 py-1.5 bg-transparent text-slate-900 text-xs sm:text-sm focus:outline-none min-w-0"
+              className="flex-1 px-2 sm:px-3 py-1.5 bg-transparent text-slate-900 text-base sm:text-sm focus:outline-none min-w-0"
             />
 
             {/* Send button */}
             <button
               type="submit"
               disabled={isLoading || !inputVal.trim()}
-              className="px-4 py-2 bg-[#4f46e5] hover:bg-[#3525cd] text-white text-xs font-semibold rounded-lg shadow-xs transition-all flex items-center gap-1 shrink-0 disabled:opacity-40 cursor-pointer"
+              className="w-9 h-9 sm:w-auto px-0 sm:px-4 py-0 sm:py-2 min-h-[36px] bg-brand-500 hover:bg-brand-600 active:scale-95 text-white text-xs font-semibold rounded-xl sm:rounded-lg shadow-xs transition-all flex items-center justify-center gap-1 shrink-0 disabled:opacity-40 cursor-pointer"
+              title="Gửi tin nhắn"
             >
-              <span>Gửi</span>
-              <span className="material-symbols-outlined text-[16px]">send</span>
+              <span className="hidden sm:inline">Gửi</span>
+              <span className="material-symbols-outlined text-[17px]">send</span>
             </button>
           </div>
 
-          {/* Quick Prompts & Disclaimer */}
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-slate-500 text-[11px]">
-            <div className="flex items-center gap-2">
+          {/* Micro disclaimer on desktop */}
+          <div className="hidden sm:flex items-center justify-between gap-2 px-1 text-slate-400 text-[10px]">
+            <span className="flex items-center gap-1.5">
               <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              <span>AI trả lời từ cơ sở dữ liệu xác thực của EventViet Demo</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => handleUserSendMessage("Tôi muốn gặp chuyên viên tư vấn trực tiếp 1-1")}
-                className="hover:text-indigo-600 hover:underline cursor-pointer"
-              >
-                📅 Đặt lịch nhanh 1-1
-              </button>
-              <button
-                type="button"
-                onClick={() => handleUserSendMessage("Khoảng giá tham khảo các gói sự kiện thế nào?")}
-                className="hover:text-indigo-600 hover:underline cursor-pointer"
-              >
-                💰 Bảng giá tham khảo
-              </button>
-            </div>
+              <span>AI trả lời từ CSDL EventHHD 2026</span>
+            </span>
           </div>
         </form>
       </div>

@@ -82,7 +82,7 @@ export function UrgentContactCard({ onOpenBooking, onClose }: UrgentContactCardP
 
         {/* Zalo OA */}
         <a
-          href="https://zalo.me/eventviet"
+          href="https://zalo.me/eventhhd"
           target="_blank"
           rel="noopener noreferrer"
           className="p-3 rounded-xl bg-[#0068ff] hover:bg-[#0052cc] text-white font-semibold text-xs sm:text-sm flex items-center justify-between shadow-xs transition-colors group cursor-pointer"
@@ -91,7 +91,7 @@ export function UrgentContactCard({ onOpenBooking, onClose }: UrgentContactCardP
             <span className="material-symbols-outlined text-[22px]">chat</span>
             <div className="text-left">
               <div className="text-[10px] text-blue-100 font-normal">Chat trực tuyến qua Zalo OA</div>
-              <div className="text-sm font-bold">Zalo: EventViet Official</div>
+              <div className="text-sm font-bold">Zalo: EventHHD Official</div>
             </div>
           </div>
           <span className="material-symbols-outlined text-[18px] opacity-80">open_in_new</span>
@@ -103,8 +103,8 @@ export function UrgentContactCard({ onOpenBooking, onClose }: UrgentContactCardP
         <div className="flex items-center gap-1.5 text-slate-600">
           <span className="material-symbols-outlined text-[16px] text-slate-400">mail</span>
           <span>Email khẩn:</span>
-          <a href="mailto:contact@eventviet.vn" className="font-semibold text-indigo-600 hover:underline">
-            contact@eventviet.vn
+          <a href="mailto:vip-events@eventhhd.vn" className="font-semibold text-indigo-600 hover:underline">
+            vip-events@eventhhd.vn
           </a>
         </div>
 
