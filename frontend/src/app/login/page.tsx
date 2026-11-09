@@ -132,7 +132,7 @@ function LoginContent() {
     }
   };
 
-  const handleAdminSubmit = (e: React.FormEvent) => {
+  const handleAdminSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setAdminError("");
 
@@ -142,7 +142,7 @@ function LoginContent() {
     }
 
     setIsAdminLoading(true);
-    const res = loginAdmin(adminEmail, adminPassword);
+    const res = await loginAdmin(adminEmail, adminPassword);
     if (!res.success) {
       setIsAdminLoading(false);
       setAdminError(res.error || "Mật khẩu quản trị chưa chính xác (Mặc định: admin2026)");

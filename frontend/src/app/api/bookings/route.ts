@@ -3,6 +3,7 @@ import { z } from "zod";
 import { bookingFromRow, type BookingRow } from "@/lib/supabase/bookingMapper";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { validateDate, validateName, validatePhone, validateTime } from "@/lib/booking/validate";
+import { hasAdminSession } from "@/lib/auth/adminSession.server";
 
 const CreateBookingSchema = z.object({
   name: z.string().trim().min(2).max(50),
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
   const date = request.nextUrl.searchParams.get("date");
   const all = request.nextUrl.searchParams.get("all") === "1";
   if (!phone && !date && !all) return jsonError("Cần số điện thoại hoặc ngày cần tra cứu.");
-  if (all && request.headers.get("x-admin-token") !== process.env.ADMIN_TOKEN) {
+  if (all && !(await hasAdminSession())) {
     return jsonError("Không có quyền xem toàn bộ lịch hẹn.", 403);
   }
 

@@ -26,6 +26,12 @@ const EVERGREEN = [
   "Quy trình làm việc với EventHHD như thế nào?",
 ];
 
+function isDocumentHeadingSuggestion(text: string): boolean {
+  const normalized = text.toLowerCase();
+  return /\bknowledge\s*base\b|\bq\s*\d+\b|\|\s*(?:knowledge|q\s*\d+)/i.test(text)
+    || /^chi\s*tiết\s*hơn\s*về\b/i.test(normalized);
+}
+
 /** Các câu user, MỚI NHẤT TRƯỚC (index 0 = câu hiện tại). */
 function userTurns({ message, history = [] }: SuggestionInput): string[] {
   const prev = history
@@ -167,6 +173,7 @@ export function refineSuggestions(
   for (const raw of llm ?? []) {
     const t = raw.replace(/^[\s\d.\-)•*]+/, "").trim();
     if (t.length < MIN_LEN || t.length > MAX_LEN) continue;
+    if (isDocumentHeadingSuggestion(t)) continue;
     if (isSimilarToAny(t, turns) || isSimilarToAny(t, cleaned)) continue;
     cleaned.push(t);
   }

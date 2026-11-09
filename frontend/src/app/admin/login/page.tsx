@@ -28,12 +28,12 @@ export default function AdminLoginPage() {
     };
   }, []);
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
 
-    const res = loginAdmin(email, password);
+    const res = await loginAdmin(email, password);
     if (!res.success) {
       setError(res.error || "Mật khẩu xác thực chưa chính xác.");
       setIsLoading(false);

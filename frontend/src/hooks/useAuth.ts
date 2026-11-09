@@ -46,15 +46,29 @@ export function useAuth() {
   }, []);
 
   // Admin functions
-  const loginAdmin = useCallback((email: string, pass: string) => {
+  const loginAdmin = useCallback(async (email: string, pass: string): Promise<ReturnType<typeof authenticateAdmin>> => {
     const res = authenticateAdmin(email, pass);
-    if (res.success && res.admin) {
+    if (!res.success || !res.admin) return res;
+
+    try {
+      const response = await fetch("/api/admin/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        return { success: false, error: typeof body.error === "string" ? body.error : "Không thể tạo phiên quản trị." };
+      }
       setAdmin(res.admin);
+      return res;
+    } catch {
+      return { success: false, error: "Không thể kết nối máy chủ để xác thực quản trị." };
     }
-    return res;
   }, []);
 
   const logoutAdminAccount = useCallback(() => {
+    void fetch("/api/admin/session", { method: "DELETE" });
     logoutAdmin();
     setAdmin(null);
   }, []);

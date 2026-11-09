@@ -3,12 +3,12 @@ import { isRateLimited } from "@/lib/rateLimit";
 import { ChatRequestWithContextSchema } from "@/lib/schemas";
 import { retrieveWithContext } from "@/lib/kb/retrieve";
 import { generateSuggestions, refineSuggestions } from "@/lib/suggestions";
-import { getBookingFormResponse, getContactResponse, getGreetingResponse, getSpecialistHandoffResponse, getUnrelatedResponse } from "@/lib/ai/mock";
+import { getBookingFormResponse, getContactResponse, getGeneralPricingResponse, getGreetingResponse, getKnowledgeGapResponse, getSpecialistHandoffResponse, getUnrelatedResponse } from "@/lib/ai/mock";
 import { callAIWithFallback } from "@/lib/ai/client";
 import { RETRIEVAL_THRESHOLD, RESCHEDULE_KEYWORDS, URGENT_KEYWORDS } from "@/lib/constants";
 import { getStageEstimate } from "@/lib/quote/stageEstimate";
 import { getPreliminaryEventEstimate } from "@/lib/quote/preliminaryEstimate";
-import { isContactRequest, isEventRelatedQuestion, isExplicitlyOutsideEventDomain, isGreeting, isSchedulingRequest } from "@/lib/ai/domain";
+import { isContactRequest, isEventRelatedQuestion, isExplicitlyOutsideEventDomain, isGeneralEventCostQuestion, isGreeting, isSchedulingRequest, needsSpecialistConsultation } from "@/lib/ai/domain";
 
 const RAG_BACKEND_URL = process.env.RAG_BACKEND_URL || "http://127.0.0.1:8000";
 
@@ -19,9 +19,22 @@ function removeInlineCitations(answer: string): string {
 }
 
 // Detect intent từ message
-function detectIntent(message: string): "reschedule" | "urgent" | "normal" {
+function detectIntent(
+  message: string,
+  history: Array<{ role: string; content: string }> = []
+): "reschedule" | "urgent" | "normal" {
   const lower = message.toLowerCase();
-  if (RESCHEDULE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))) return "reschedule";
+  const requestsReschedule = RESCHEDULE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()));
+  const discussesEventPolicy = /(chính sách|điều khoản|hủy\s*(?:sự kiện|hợp đồng)|hoàn\s*(?:cọc|tiền)|phí\s*đổi\s*lịch)/i.test(message);
+  const namesAppointment = /(lịch\s*hẹn|lịch\s*tư\s*vấn|cuộc\s*hẹn|mã\s*lịch|khung\s*giờ|đổi\s*sang|chuyển\s*sang)/i.test(message);
+  const makesPersonalRequest = /(?:tôi|mình|em|anh|chị)\s*(?:muốn|cần|xin|định)?\s*đổi\s*lịch/i.test(message);
+  const recentAppointmentContext = history.slice(-4).some(
+    (turn) => turn.role === "user" && /(đổi\s*lịch|lịch\s*hẹn|lịch\s*tư\s*vấn)/i.test(turn.content)
+  );
+
+  // "Chính sách hủy và đổi lịch sự kiện" là câu hỏi policy, không phải thao
+  // tác đổi lịch hẹn. Chỉ mở luồng reschedule khi khách đang nói về lịch của họ.
+  if (requestsReschedule && !discussesEventPolicy && (namesAppointment || makesPersonalRequest || recentAppointmentContext)) return "reschedule";
   if (URGENT_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()))) return "urgent";
   return "normal";
 }
@@ -69,7 +82,7 @@ export async function POST(req: NextRequest) {
     : `anon_${ip.replace(/[^a-zA-Z0-9]/g, "_")}`;
 
   // Detect intent trước
-  const intent = detectIntent(message);
+  const intent = detectIntent(message, history);
 
   // Lời chào là conversational intent, không cần truy xuất FAQ.
   if (isGreeting(message)) {
@@ -89,6 +102,12 @@ export async function POST(req: NextRequest) {
   // Báo giá diện tích là phép tính xác định từ bảng giá, không cần chờ LLM.
   const stageEstimate = getStageEstimate(message, history);
   if (stageEstimate) return NextResponse.json({ ...stageEstimate, intent: "normal" as const });
+
+  // Câu hỏi giá chung cần được hướng dẫn thu thập thông tin, không phải bị RAG
+  // fallback rồi đẩy ngay sang form đặt lịch.
+  if (isGeneralEventCostQuestion(message)) {
+    return NextResponse.json({ ...getGeneralPricingResponse(), intent: "normal" as const });
+  }
 
   // Chỉ những yêu cầu liên quan tổ chức sự kiện mới được đi tới luồng tư vấn.
   if (isExplicitlyOutsideEventDomain(message) || !isEventRelatedQuestion(message, history)) {
@@ -188,7 +207,10 @@ export async function POST(req: NextRequest) {
         history: history || [],
         staff_context: staffContext || undefined,
       }),
-      signal: AbortSignal.timeout(5000),
+      // Gemini + local embedding có thể cần hơn 5 giây, nhất là ngay sau khi
+      // container khởi động. Timeout cũ khiến frontend tự rơi về câu handoff
+      // dù RAG đã có câu trả lời đúng trong database.
+      signal: AbortSignal.timeout(25_000),
     });
 
     if (backendRes.ok) {
@@ -196,9 +218,8 @@ export async function POST(req: NextRequest) {
       const isOutOfScope =
         ragData.status === "refusal" ||
         ragData.status === "out_of_scope" ||
-        ragData.status === "fallback" ||
-        ragData.status === "degraded" ||
         ragData.meta?.intent === "out_of_scope";
+      const hasKnowledgeGap = ragData.status === "fallback" || ragData.status === "degraded";
 
       const answer = removeInlineCitations(
         ragData.answer ||
@@ -207,10 +228,35 @@ export async function POST(req: NextRequest) {
           : "")
       );
 
-      // Fallback của RAG với câu hỏi vẫn thuộc lĩnh vực là một yêu cầu cần
-      // chuyên viên, không phải "ngoài phạm vi" và cũng không được bịa đáp án.
+      // Không có chunk khớp không đồng nghĩa câu hỏi ngoài phạm vi. Chỉ những
+      // yêu cầu cần khảo sát/đặc tả mới được mời đặt lịch ngay.
       if (isOutOfScope) {
-        return NextResponse.json({ ...getSpecialistHandoffResponse(), intent: "out_of_scope" as const });
+        return NextResponse.json({ ...getUnrelatedResponse(), intent: "out_of_scope" as const });
+      }
+      if (hasKnowledgeGap) {
+        // RAG vector có thể bỏ sót một số câu FAQ ngắn do cách diễn đạt.
+        // Trước khi nói "thiếu dữ liệu", tra lại kho FAQ chuẩn đã được kiểm
+        // duyệt để các câu như quy trình/chính sách/dịch vụ vẫn có câu trả lời.
+        const localFallback = retrieveWithContext(message, history);
+        if (localFallback.score >= RETRIEVAL_THRESHOLD && localFallback.results[0]) {
+          const faq = localFallback.results[0].faq;
+          return NextResponse.json({
+            answer: faq.answer,
+            options: [
+              { id: "faq-followup", label: "Tìm hiểu thêm", action: "ask" as const, payload: faq.followups[0] },
+              { id: "faq-services", label: "Xem dịch vụ", action: "ask" as const, payload: "EventHHD cung cấp những dịch vụ gì?" },
+            ],
+            related_questions: faq.followups,
+            needs_booking: false,
+            matched_faq_ids: [faq.id],
+            source: "ai" as const,
+            intent: "normal" as const,
+          });
+        }
+        return NextResponse.json({
+          ...getKnowledgeGapResponse(message, needsSpecialistConsultation(message)),
+          intent: "normal" as const,
+        });
       }
 
       const defaultOptions = [
@@ -218,14 +264,10 @@ export async function POST(req: NextRequest) {
         { id: "opt-2", label: "Xem dịch vụ", action: "ask" as const, payload: "EventHHD cung cấp những dịch vụ gì?" },
       ];
 
-      const followUps =
-        ragData.follow_ups && ragData.follow_ups.length >= 3
-          ? ([ragData.follow_ups[0], ragData.follow_ups[1], ragData.follow_ups[2]] as [
-              string,
-              string,
-              string
-            ])
-          : generateSuggestions({ message, history });
+      // Follow-up từ RAG có thể chứa breadcrumb/tên heading thô của DOCX.
+      // Luôn đi qua bộ lọc ngữ cảnh để loại "Q2", "Knowledge Base" và bù
+      // các câu hỏi phù hợp với lượt hội thoại hiện tại.
+      const followUps = refineSuggestions(ragData.follow_ups, { message, history });
 
       return NextResponse.json({
         answer,

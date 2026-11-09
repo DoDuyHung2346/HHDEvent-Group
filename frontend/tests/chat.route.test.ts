@@ -64,6 +64,50 @@ describe("POST /api/chat", () => {
     expect(data.options).toBeDefined();
   });
 
+  it("CA-1b: Hỏi chi phí tổng quan → hướng dẫn dự toán, không ép đặt lịch", async () => {
+    const res = await postChat({ message: "Chi phí tổ chức sự kiện của công ty mình là gì?" });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.needs_booking).toBe(false);
+    expect(data.answer).toContain("không có một mức cố định");
+    expect(data.options.some((option: { action: string }) => option.action === "open_booking")).toBe(false);
+  });
+
+  it("CA-1c: RAG thiếu dữ liệu về uy tín → minh bạch, không ép đặt lịch", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ status: "fallback", answer: "", meta: { intent: "faq" } }), { status: 200 })
+    );
+    const res = await postChat({ message: "Công ty có uy tín không?" });
+    const data = await res.json();
+    expect(data.needs_booking).toBe(false);
+    expect(data.answer).toContain("chưa có tài liệu đã xác thực");
+    expect(data.options.some((option: { action: string }) => option.action === "open_booking")).toBe(false);
+    fetchMock.mockRestore();
+  });
+
+  it("CA-1d: RAG bỏ sót FAQ quy trình → dùng FAQ chuẩn trước khi fallback", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ status: "fallback", answer: "", meta: { intent: "faq" } }), { status: 200 })
+    );
+    const res = await postChat({ message: "Quy trình làm việc với EventHHD như thế nào?" });
+    const data = await res.json();
+    expect(data.needs_booking).toBe(false);
+    expect(data.answer).toContain("6 bước");
+    expect(data.matched_faq_ids).toContain("faq-07");
+    fetchMock.mockRestore();
+  });
+
+  it("CA-1e: Chính sách đổi lịch sự kiện không bị nhầm thành đổi lịch hẹn", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ status: "fallback", answer: "", meta: { intent: "policy" } }), { status: 200 })
+    );
+    const res = await postChat({ message: "Chính sách hủy và đổi lịch sự kiện?" });
+    const data = await res.json();
+    expect(data.intent).toBe("normal");
+    expect(data.answer).toContain("Hủy trước 30 ngày");
+    fetchMock.mockRestore();
+  });
+
   it("CA-2 (Sai): Tin nhắn rỗng → 400", async () => {
     const res = await postChat({ message: "" });
     expect(res.status).toBe(400);

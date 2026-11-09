@@ -1,12 +1,15 @@
 {
   "name": "eventhhd-platform",
   "private": true,
+  "engines": {
+    "node": ">=22.12.0",
+    "npm": ">=10.8.0"
+  },
   "scripts": {
-    "dev": "npm --prefix frontend run dev",
+    "dev": "node frontend/scripts/bootstrap-local.mjs && node frontend/scripts/ensure-backend.mjs && npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "test": "npm --prefix frontend run test",
-    "lint": "npm --prefix frontend run lint",
-    "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "test:backend": "python -m pytest backend/tests -q",
+    "lint": "npm --prefix frontend run lint"
   }
 }

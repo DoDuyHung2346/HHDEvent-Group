@@ -157,6 +157,21 @@ export function useCustomer(phone: string | null) {
     [phone]
   );
 
+  // "Làm mới" phải tách hẳn phiên tư vấn mới khỏi dữ kiện cũ của khách.
+  // Hồ sơ khách và các session cũ vẫn được giữ để CRM tra cứu khi cần.
+  const clearConversationMemory = useCallback(() => {
+    if (!phone || !phone.trim()) return;
+    const cleared = upsertCustomer(phone.trim(), {
+      preferredEventType: undefined,
+      budgetMentioned: undefined,
+      guestCountMentioned: undefined,
+      eventDateMentioned: undefined,
+      notes: "",
+    });
+    setCustomer(cleared);
+    void syncRemoteCustomer(cleared).catch(() => undefined);
+  }, [phone]);
+
   // ── Mở một phiên chat mới cho khách hàng ───────────────────────────────────
   const startNewSession = useCallback((): ChatSession | null => {
     if (!phone || !phone.trim()) return null;
@@ -192,6 +207,7 @@ export function useCustomer(phone: string | null) {
     initCustomer,
     saveMessage,
     updateMemory,
+    clearConversationMemory,
     loadHistory,
     startNewSession,
     switchSession,

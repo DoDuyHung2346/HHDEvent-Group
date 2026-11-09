@@ -24,7 +24,6 @@ export async function fetchBookings(params: { phone?: string; date?: string } = 
 export async function fetchAllRemoteBookings(): Promise<Booking[]> {
   const response = await fetch("/api/bookings?all=1", {
     cache: "no-store",
-    headers: { "x-admin-token": process.env.NEXT_PUBLIC_RAG_ADMIN_TOKEN ?? "" },
   });
   const data = await readJson<{ bookings: Booking[] }>(response);
   return data.bookings;

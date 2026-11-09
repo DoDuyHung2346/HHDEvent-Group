@@ -17,19 +17,9 @@ def select_followups(
 
     selected: List[str] = []
 
-    # 1. Lấy từ breadcrumb / tiêu đề của các candidate
-    for c in candidates:
-        if len(selected) >= 3:
-            break
-        # Tạo câu hỏi gợi ý từ breadcrumb
-        if " > " in c.breadcrumb:
-            topic = c.breadcrumb.split(" > ")[-1].strip()
-            q = f"Chi tiết hơn về {topic} như thế nào?"
-            if q.lower() not in seen:
-                selected.append(q)
-                seen.add(q.lower())
-
-    # 2. Bù từ popular questions nếu chưa đủ 3 câu
+    # Breadcrumb của DOCX thường là tiêu đề kỹ thuật như "Q2" hoặc
+    # "KNOWLEDGE BASE", không phải câu hỏi khách hàng tự nhiên. Chỉ trả về
+    # câu hỏi đã được kiểm duyệt; frontend sẽ cá nhân hoá tiếp theo history.
     for pq in POPULAR_QUESTIONS:
         if len(selected) >= 3:
             break

@@ -168,7 +168,7 @@ export default function ChatWindow({
   }>({});
 
   // Hook Customer Memory & Session Storage
-  const { customer, saveMessage, updateMemory, initCustomer, currentSession, startNewSession } = useCustomer(customerPhone);
+  const { customer, saveMessage, updateMemory, clearConversationMemory, initCustomer, currentSession, startNewSession } = useCustomer(customerPhone);
 
   // Tạo customerContext truyền lên AI API
   const customerContext: CustomerContext | null = useMemo(() => {
@@ -244,6 +244,7 @@ export default function ChatWindow({
     sessionStorage.setItem(chatLoginStorageKey, user.id);
     const newSession = startNewSession();
     if (!newSession) return;
+    clearConversationMemory();
 
     const greeting = "Xin chào! Em là trợ lý AI của EventViet. Em có thể tư vấn tổ chức sự kiện, lựa chọn dịch vụ và dự toán chi phí. Anh/chị đang quan tâm đến loại sự kiện nào ạ?";
     queueMicrotask(() => {
@@ -253,7 +254,7 @@ export default function ChatWindow({
       appendContext("assistant", greeting);
       saveMessage({ role: "assistant", content: greeting, timestamp: new Date().toISOString(), messageType: "text" }, newSession.id);
     });
-  }, [user?.id, user?.phone, customerPhone, startNewSession, clearMessages, appendContext, saveMessage]);
+  }, [user?.id, user?.phone, customerPhone, startNewSession, clearConversationMemory, clearMessages, appendContext, saveMessage]);
 
   useEffect(() => {
     if (!currentSession || restoredSessionIdRef.current === currentSession.id) return;
@@ -734,8 +735,16 @@ export default function ChatWindow({
       clearMessages();
       setMessages([]);
       setConfirmedBooking(null);
+      setPendingMemory({});
+      clearConversationMemory();
       restoredSessionIdRef.current = null;
-      startNewSession();
+      const newSession = startNewSession();
+      if (newSession) {
+        const greeting = "Xin chào! Em là trợ lý AI của EventViet. Em có thể tư vấn tổ chức sự kiện, lựa chọn dịch vụ và dự toán chi phí. Anh/chị đang quan tâm đến loại sự kiện nào ạ?";
+        setMessages([{ id: `ai-welcome-${Date.now()}`, sender: "ai", text: greeting, time: "Vừa xong", type: "text" }]);
+        appendContext("assistant", greeting);
+        saveMessage({ role: "assistant", content: greeting, timestamp: new Date().toISOString(), messageType: "text" }, newSession.id);
+      }
     }
   };
 
@@ -1089,10 +1098,13 @@ export default function ChatWindow({
             {msg.sender === "user" ? (
               /* User Bubble */
               <div className="flex justify-end items-end gap-2.5">
-                <div className="max-w-[85%] sm:max-w-[75%] p-3.5 sm:p-4 rounded-xl rounded-br-xs bg-brand-500 text-white shadow-sm">
-                  <p className="font-body-md text-xs sm:text-sm leading-relaxed whitespace-pre-line">
+                <div
+                  className="max-w-[85%] sm:max-w-[75%] p-3.5 sm:p-4 rounded-xl rounded-br-xs bg-brand-500 text-white shadow-sm select-text"
+                  style={{ userSelect: "text", WebkitUserSelect: "text" }}
+                >
+                    <p className="font-body-md text-xs sm:text-sm leading-relaxed whitespace-pre-line select-text">
                     {msg.text}
-                  </p>
+                    </p>
                   <div className="text-right mt-1">
                     <span className="font-mono text-[10px] text-purple-200">{msg.time}</span>
                   </div>

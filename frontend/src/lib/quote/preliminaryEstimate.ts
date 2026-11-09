@@ -38,6 +38,14 @@ function formatVnd(value: number): string {
   return `${new Intl.NumberFormat("vi-VN").format(value)} VNĐ`;
 }
 
+// Chỉ mượn dữ kiện của lượt trước khi khách thực sự hỏi tiếp câu đang dang dở.
+// Không để một YEP/ngân sách cũ lấn át một câu hỏi mới hoàn toàn.
+function isContextualFollowUp(message: string): boolean {
+  const normalized = message.trim().toLowerCase();
+  return /^(?:còn|vậy|thế|như vậy|gói đó|phương án đó|nó|cái đó|bên trên)\b/.test(normalized)
+    || /^(?:bao nhiêu|giá thế nào|chi phí thế nào)\??$/.test(normalized);
+}
+
 /**
  * Dự toán cho yêu cầu có quy mô khách nhưng chưa có báo giá/RAG chuyên biệt.
  * Chỉ tính trên các cấu hình có giá sẵn, để AI không tự bịa giá theo cảm tính.
@@ -47,10 +55,13 @@ export function getPreliminaryEventEstimate(message: string, history: ChatTurn[]
   // Sân khấu/thảm có công thức riêng, để stageEstimate xử lý trước.
   if (/(sân khấu|san khau|thảm đỏ|tham do)/i.test(current)) return null;
 
-  const userContext = [message, ...history.filter((turn) => turn.role === "user").map((turn) => turn.content)].join(" ");
+  const useHistory = isContextualFollowUp(message);
+  const userContext = useHistory
+    ? [message, ...history.filter((turn) => turn.role === "user").map((turn) => turn.content)].join(" ")
+    : message;
   const guestCount = getGuestCount(userContext);
-  const budget = getBudget(message) ?? getBudget(userContext);
-  const asksForEstimate = /(giá|bao nhiêu|chi phí|báo giá|dự toán|ước tính|ngân sách|budget)/i.test(current) || budget !== null;
+  const budget = getBudget(message) ?? (useHistory ? getBudget(userContext) : null);
+  const asksForEstimate = /(giá|bao nhiêu|chi phí|báo giá|dự toán|ước tính|ngân sách|budget)/i.test(current) || (useHistory && budget !== null);
   const isEventRequest = /(sự kiện|year[ -]?end|\byep\b|tất niên|đám cưới|tiệc cưới|wedding|hội nghị|hội thảo|khai trương|ra mắt|sinh nhật|gala|team building)/i.test(userContext);
 
   if (!guestCount || !asksForEstimate || !isEventRequest) return null;

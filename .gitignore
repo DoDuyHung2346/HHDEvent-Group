@@ -46,10 +46,12 @@ backend/data/*.db
 backend/data/*.sqlite
 backend/data/*.sqlite3
 backend/data/qdrant/
+backend/data/qdrant-vilao-local/
 backend/data/uploads/*
 !backend/data/uploads/.gitkeep
 backend/data/bm25/
 backend/data/qdrant_storage/
+backend/data/docker-rag-from-docker-backup/
 
 # Local Python tooling
 .python-version

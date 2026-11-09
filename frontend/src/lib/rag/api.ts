@@ -39,7 +39,7 @@ export interface RAGChunk {
 }
 
 // Tất cả request từ trình duyệt đi qua Next.js proxy. Nhờ vậy browser không
-// cần biết hostname Docker nội bộ hoặc token quản trị của RAG backend.
+// cần biết địa chỉ nội bộ hoặc token quản trị của RAG backend.
 const BACKEND_URL = "/api/rag";
 
 export class RAGRequestError extends Error {
