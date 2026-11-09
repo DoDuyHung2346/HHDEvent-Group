@@ -38,8 +38,7 @@ export async function GET() {
   if (messagesError) return NextResponse.json({ error: "Không thể tải nội dung hội thoại." }, { status: 500 });
 
   const messages = (rawMessages ?? []) as MessageRow[];
-  return NextResponse.json({
-    conversations: sessions.map((session) => {
+  const conversations = sessions.map((session) => {
       const customer = Array.isArray(session.customer) ? session.customer[0] : session.customer;
       return {
         id: session.id,
@@ -51,6 +50,11 @@ export async function GET() {
           .filter((message) => message.session_id === session.id)
           .map((message) => ({ id: message.id, role: message.role, content: message.content, type: message.message_type, createdAt: message.created_at })),
       };
-    }),
-  });
+    })
+    // Một session có thể được tạo khi khách vừa mở chatbot. Hộp thư quản trị
+    // chỉ hiển thị cuộc hội thoại đã thật sự có tin nhắn, tránh các dòng
+    // "Khách hàng / Chưa có tin nhắn" gây nhiễu.
+    .filter((conversation) => conversation.messages.length > 0);
+
+  return NextResponse.json({ conversations });
 }
