@@ -14,8 +14,8 @@ Nền tảng tư vấn tổ chức sự kiện bằng AI, kết hợp chatbot RA
 | Đề bài bốc thăm | Đề 4: Chatbot FAQ & đặt lịch tư vấn |
 | Demo online |https://hhd-event-group.vercel.app/?fbclid=IwY2xjawVesFtleHRuA2FlbQIxMABwZG9mBWJyaWQRMWxEWjF2VlNoT2piMHI5ZlpzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEflAbxXUreGi_PPSN_kO5ML8E4Fue-Vc5ck4ssoK71GYvOpICwUtu3rHMtEJ4_aem_j8bfa_zm16ONxHBS2TDMWg |
 | Video demo (≤ 02 phút) | https://drive.google.com/file/d/1Iqce0_W1TURKWfRwUd5w31-21qeYAT2Y/view?usp=drive_link |
-| Source ZIP | `<Bổ sung URL gói mã nguồn>` |
-| Minh chứng dùng AI | [docs/AI_LOG.md](docs/AI_LOG.md) |
+| Source ZIP |  |
+| Minh chứng dùng AI |https://drive.google.com/file/d/1vtqL7fgbsUSjJstZrru2YmDRLD4bJzyy/view?usp=sharing|
 | Bảng kiểm thử | https://docs.google.com/document/d/1gm7ZEyCiKs3Q0ZepVEh31p1FTK3y2aYKX9Polv78N1g/edit?usp=sharing |
 
 Tiêu chí vòng loại: <https://vibecoding.info.vn/tieu-chi-cham-thi>.
@@ -160,8 +160,7 @@ HHDEvent-Group/
 2. Backend kiểm tra file, trích xuất văn bản, chia chunks, tạo embedding và index vào Qdrant.
 3. Chỉ khi job có trạng thái `Ready`, tài liệu mới được dùng để trả lời.
 4. Với cấu hình cloud, file gốc nằm ở Supabase Storage; metadata/chunks/traces ở PostgreSQL; vector nằm ở Qdrant Cloud. Dữ liệu không mất khi restart.
-
-Để nạp hàng loạt file nguồn đang có trên máy vào kho cloud, xem hướng dẫn và dùng `backend/scripts/seed_rag_cloud.py` trong [docs/production-rag.md](docs/production-rag.md). Không push cache RAG/local database lên GitHub.
+ Không push cache RAG/local database lên GitHub.
 
 ### Vai trò
 
@@ -201,7 +200,7 @@ Chi tiết các ca kiểm thử và kết quả gần nhất nằm trong [TESTIN
 
 ## 11. Minh chứng dùng AI để xây dựng sản phẩm
 
-Nhật ký mẫu các vòng yêu cầu AI → phát hiện lỗi → yêu cầu cải thiện → kết quả có tại [docs/AI_LOG.md](docs/AI_LOG.md).
+Nhật ký mẫu các vòng yêu cầu AI → phát hiện lỗi → yêu cầu cải thiện → kết quả có tại https://drive.google.com/file/d/1vtqL7fgbsUSjJstZrru2YmDRLD4bJzyy/view?usp=sharing.
 
 Trước khi nộp bài, đội cần bổ sung tối đa 5 ảnh/đoạn hội thoại chọn lọc và nêu rõ:
 
@@ -214,5 +213,5 @@ Trước khi nộp bài, đội cần bổ sung tối đa 5 ảnh/đoạn hội 
 
 - Source ZIP chỉ chứa mã nguồn, README, `.env.example`, migration và tài liệu cần thiết; không chứa secret hoặc database/cache local.
 - Bổ sung URL video demo tối đa 2 phút và tài khoản demo (nếu ban tổ chức yêu cầu).
-- Chạy kiểm thử, cập nhật [TESTING.md](TESTING.md) với kết quả thực tế trước khi nộp.
+- Chạy kiểm thử, cập nhật https://docs.google.com/document/d/1gm7ZEyCiKs3Q0ZepVEh31p1FTK3y2aYKX9Polv78N1g/edit?usp=sharing với kết quả thực tế trước khi nộp.
 - Kiểm tra các placeholder `<...>` trong README trước khi đóng gói.
