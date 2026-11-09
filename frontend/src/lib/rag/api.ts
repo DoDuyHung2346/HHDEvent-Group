@@ -38,10 +38,9 @@ export interface RAGChunk {
   parent_id?: string;
 }
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
-// Local development token. For production, replace the browser upload path
-// with a server-side proxy so this value is never exposed to the client.
-const ADMIN_TOKEN = process.env.NEXT_PUBLIC_RAG_ADMIN_TOKEN || "eventviet-local-admin-token";
+// Tất cả request từ trình duyệt đi qua Next.js proxy. Nhờ vậy browser không
+// cần biết hostname Docker nội bộ hoặc token quản trị của RAG backend.
+const BACKEND_URL = "/api/rag";
 
 export class RAGRequestError extends Error {
   constructor(
@@ -75,7 +74,7 @@ function getErrorDetail(errorData: unknown, fallback: string): { message: string
  */
 export async function checkRAGHealth(): Promise<{ ok: boolean; message?: string }> {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/health`, {
+    const res = await fetch(`${BACKEND_URL}/health`, {
       method: "GET",
       signal: AbortSignal.timeout(3000),
     });
@@ -104,11 +103,8 @@ export async function uploadDocumentToRAG(
   if (title) formData.append("title", title);
   if (force) formData.append("force", "true");
 
-  const res = await fetch(`${BACKEND_URL}/api/kb/documents`, {
+  const res = await fetch(`${BACKEND_URL}/kb/documents`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${ADMIN_TOKEN}`,
-    },
     body: formData,
   });
 
@@ -125,11 +121,8 @@ export async function uploadDocumentToRAG(
  * Lấy trạng thái tiến trình Ingestion Job (Validation -> Parse -> Quality -> Chunk -> Embed -> Index -> Ready)
  */
 export async function getIngestJobStatus(jobId: string): Promise<IngestJob> {
-  const res = await fetch(`${BACKEND_URL}/api/kb/jobs/${jobId}`, {
+  const res = await fetch(`${BACKEND_URL}/kb/jobs/${jobId}`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${ADMIN_TOKEN}`,
-    },
   });
 
   if (!res.ok) {
@@ -144,11 +137,8 @@ export async function getIngestJobStatus(jobId: string): Promise<IngestJob> {
  * Lấy danh sách tài liệu đã index trong Backend RAG
  */
 export async function listRAGDocuments(): Promise<RAGDocument[]> {
-  const res = await fetch(`${BACKEND_URL}/api/kb/documents`, {
+  const res = await fetch(`${BACKEND_URL}/kb/documents`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${ADMIN_TOKEN}`,
-    },
   });
 
   if (!res.ok) {
@@ -162,11 +152,8 @@ export async function listRAGDocuments(): Promise<RAGDocument[]> {
  * Lấy danh sách các chunks của tài liệu cụ thể
  */
 export async function getRAGDocumentChunks(docId: string): Promise<RAGChunk[]> {
-  const res = await fetch(`${BACKEND_URL}/api/kb/documents/${docId}/chunks`, {
+  const res = await fetch(`${BACKEND_URL}/kb/documents/${docId}/chunks`, {
     method: "GET",
-    headers: {
-      Authorization: `Bearer ${ADMIN_TOKEN}`,
-    },
   });
 
   if (!res.ok) {
@@ -180,11 +167,8 @@ export async function getRAGDocumentChunks(docId: string): Promise<RAGChunk[]> {
  * Xóa tài liệu khỏi Backend RAG (xóa SQLite, Qdrant Vector và BM25 Index)
  */
 export async function deleteRAGDocument(docId: string): Promise<boolean> {
-  const res = await fetch(`${BACKEND_URL}/api/kb/documents/${docId}`, {
+  const res = await fetch(`${BACKEND_URL}/kb/documents/${docId}`, {
     method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${ADMIN_TOKEN}`,
-    },
   });
 
   if (!res.ok) {

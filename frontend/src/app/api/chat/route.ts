@@ -10,7 +10,7 @@ import { getStageEstimate } from "@/lib/quote/stageEstimate";
 import { getPreliminaryEventEstimate } from "@/lib/quote/preliminaryEstimate";
 import { isContactRequest, isEventRelatedQuestion, isExplicitlyOutsideEventDomain, isGreeting, isSchedulingRequest } from "@/lib/ai/domain";
 
-const RAG_BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
+const RAG_BACKEND_URL = process.env.RAG_BACKEND_URL || "http://127.0.0.1:8000";
 
 // Nguồn vẫn được giữ trong metadata cho quản trị/RAG, nhưng khách hàng không
 // cần thấy ký hiệu kỹ thuật như [1], [2] chen vào nội dung tư vấn.

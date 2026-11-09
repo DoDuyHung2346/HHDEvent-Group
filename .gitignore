@@ -32,6 +32,7 @@ ENV/
 
 # Environment & Secrets (Never commit credentials)
 .env
+eventhhd-rag-data.tar.gz
 .env.local
 .env.*.local
 *.pem

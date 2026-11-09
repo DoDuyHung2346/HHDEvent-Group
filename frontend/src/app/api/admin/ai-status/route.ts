@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAISafeStatus } from "@/lib/ai/config";
 
 const backendUrl =
-  process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1:8000";
+  process.env.RAG_BACKEND_URL || "http://127.0.0.1:8000";
 
 /** Returns diagnostics only. API keys and tokens are never returned. */
 export async function GET() {

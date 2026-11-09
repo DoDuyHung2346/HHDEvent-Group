@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const envPath = resolve(".env");
+const envPath = resolve("..", ".env");
 const source = readFileSync(envPath, "utf8");
 const existing = new Map();
 

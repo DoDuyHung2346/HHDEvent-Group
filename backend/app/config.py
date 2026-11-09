@@ -46,13 +46,13 @@ class Settings(BaseSettings):
 
     # Vector store
     VECTOR_BACKEND: str = "qdrant_local"  # qdrant_local | qdrant_server | memory
-    QDRANT_PATH: str = "./backend/data/qdrant"
+    QDRANT_PATH: str = str(BASE_DIR / "data" / "qdrant")
     QDRANT_URL: Optional[str] = None
     QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION: str = "kb_chunks"
 
     # DB / Cache
-    DB_URL: str = "sqlite:///./backend/data/app.db"
+    DB_URL: str = f"sqlite:///{(BASE_DIR / 'data' / 'app.db').as_posix()}"
     CACHE_BACKEND: str = "memory"
     REDIS_URL: Optional[str] = None
     EXACT_CACHE_TTL_S: int = 21600
