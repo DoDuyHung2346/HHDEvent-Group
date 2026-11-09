@@ -2,6 +2,7 @@
 
 import type { QuoteCategory } from "@/lib/quote/catalog";
 import { formatPrice } from "@/lib/quote/format";
+import { CheckIcon } from "@/components/shared/FormIcons";
 
 interface OptionGroupProps {
   category: QuoteCategory;
@@ -36,7 +37,7 @@ export function OptionGroup({ category, selected, onSelect }: OptionGroupProps) 
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-1.5">
         {category.options.map((opt) => {
           const active = isSelected(opt.id);
           return (
@@ -44,14 +45,21 @@ export function OptionGroup({ category, selected, onSelect }: OptionGroupProps) 
               key={opt.id}
               type="button"
               onClick={() => onSelect(category.id, opt.id)}
-              className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1 cursor-pointer min-h-[58px] ${
+              className={`p-3 sm:p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between gap-1.5 cursor-pointer min-h-[56px] sm:min-h-[58px] select-none active:scale-[0.98] ${
                 active
                   ? "bg-[#4f46e5] text-white border-[#4f46e5] shadow-xs ring-2 ring-indigo-200"
-                  : "bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-slate-50/80"
+                  : "bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-slate-50/80 active:bg-slate-100"
               }`}
             >
               <div className="flex items-center justify-between gap-1 w-full">
-                <span className="text-xs font-bold leading-tight truncate">{opt.label}</span>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  {active && (
+                    <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                      <CheckIcon size={11} className="text-white" />
+                    </div>
+                  )}
+                  <span className="text-xs font-bold leading-tight truncate">{opt.label}</span>
+                </div>
                 <span
                   className={`text-[11px] font-extrabold shrink-0 ${
                     active ? "text-indigo-100" : "text-[#3525cd]"
@@ -76,4 +84,3 @@ export function OptionGroup({ category, selected, onSelect }: OptionGroupProps) 
     </div>
   );
 }
-

@@ -7,6 +7,7 @@ import type { QuoteSnapshot, RequirementSelection } from "@/lib/schemas";
 import { GuestCountInput } from "./GuestCountInput";
 import { OptionGroup } from "./OptionGroup";
 import { LiveEstimateBar } from "./LiveEstimateBar";
+import { FileTextIcon, AlertCircleIcon, SparklesIcon } from "@/components/shared/FormIcons";
 
 interface RequirementsFormCardProps {
   initialGuestCount?: number;
@@ -86,12 +87,12 @@ export function RequirementsFormCard({
       {/* Header */}
       <div className="flex items-center justify-between pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] text-white flex items-center justify-center font-bold shadow-xs">
-            <span className="material-symbols-outlined text-[20px]">design_services</span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#3525cd] to-[#4f46e5] text-white flex items-center justify-center font-bold shadow-xs shrink-0">
+            <SparklesIcon size={18} />
           </div>
           <div>
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
-              <span>EventViet Concierge</span>
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+              <span>EventHHD Concierge</span>
               <span className="text-slate-300">•</span>
               <span className="text-[#3525cd]">Phiếu Chọn Yêu Cầu Sự Kiện</span>
             </h3>
@@ -102,7 +103,7 @@ export function RequirementsFormCard({
         </div>
 
         {disabled && (
-          <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full border border-slate-200">
+          <span className="text-[10px] bg-slate-100 text-slate-600 font-semibold px-2 py-0.5 rounded-full border border-slate-200 shrink-0">
             Đã gửi yêu cầu
           </span>
         )}
@@ -126,7 +127,7 @@ export function RequirementsFormCard({
       {/* Note input */}
       <div className="space-y-1.5 pt-1 border-t border-slate-100">
         <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-          <span className="material-symbols-outlined text-[16px] text-[#4f46e5]">edit_note</span>
+          <FileTextIcon size={16} className="text-[#4f46e5] shrink-0" />
           <span>Ghi chú thêm về mong muốn riêng (tùy chọn):</span>
         </label>
         <textarea
@@ -136,7 +137,7 @@ export function RequirementsFormCard({
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="Ví dụ: Tông màu chủ đạo xanh midnight, cần hiệu ứng pháo sáng lạnh khi cắt bánh..."
-          className="w-full p-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4f46e5] bg-white shadow-2xs"
+          className="w-full p-3 sm:p-2.5 text-base sm:text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-[#4f46e5] bg-white shadow-2xs transition-all"
         />
         <div className="text-right text-[10px] text-slate-400">
           {note.length}/300 ký tự
@@ -145,8 +146,8 @@ export function RequirementsFormCard({
 
       {/* Error alert */}
       {errorMessage && (
-        <div className="p-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-semibold flex items-center gap-1.5 border border-red-200 animate-in fade-in">
-          <span className="material-symbols-outlined text-[16px]">error</span>
+        <div className="p-3 sm:p-2.5 rounded-xl bg-red-50 text-red-700 text-xs font-semibold flex items-center gap-2 border border-red-200 animate-in fade-in">
+          <AlertCircleIcon size={16} className="shrink-0 text-red-600" />
           <span>{errorMessage}</span>
         </div>
       )}
@@ -160,4 +161,3 @@ export function RequirementsFormCard({
     </div>
   );
 }
-

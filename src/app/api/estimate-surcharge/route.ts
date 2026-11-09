@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
         success: true,
         items: [],
         totalSurcharge: 0,
-        aiAdvice: "Chưa ghi nhận yêu cầu phát sinh đặc thù nào. Chi phí sự kiện áp dụng 100% theo định mức cố định chuẩn mực của EventViet.",
+        aiAdvice: "Chưa ghi nhận yêu cầu phát sinh đặc thù nào. Chi phí sự kiện áp dụng 100% theo định mức cố định chuẩn mực của EventHHD.",
         feasibilityScore: 98,
       });
     }
@@ -187,7 +187,7 @@ export async function POST(req: NextRequest) {
     // AI Advice tổng kết
     let aiAdvice = "Kịch bản sự kiện có tính khả thi cao.";
     if (items.length > 0) {
-      aiAdvice = `AI đã bóc tách ${items.length} hạng mục phát sinh tiềm ẩn từ mô tả (${items.map((i) => i.name).join(", ")}). Khuyến nghị Quý khách chốt phương án sớm trước 72h để EventViet tối ưu chi phí vận chuyển & nhân sự lên đến 15%.`;
+      aiAdvice = `AI đã bóc tách ${items.length} hạng mục phát sinh tiềm ẩn từ mô tả (${items.map((i) => i.name).join(", ")}). Khuyến nghị Quý khách chốt phương án sớm trước 72h để EventHHD tối ưu chi phí vận chuyển & nhân sự lên đến 15%.`;
     }
 
     return NextResponse.json<SurchargeResponse>({

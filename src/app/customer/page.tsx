@@ -17,7 +17,13 @@ export default function CustomerDashboardPage() {
   const { user, isUserLoggedIn, logoutUser } = useAuth();
 
   const [activeTab, setActiveTab] = useState<"chat" | "my_bookings" | "pricing">("chat");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setSidebarOpen(true);
+    }
+  }, []);
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
 
   // My Bookings State
@@ -188,7 +194,7 @@ export default function CustomerDashboardPage() {
   // Export estimate as text file
   const handleExportEstimate = () => {
     const text = `=====================================================
-BẢNG DỰ TOÁN NGÂN SÁCH SỰ KIỆN - EVENTVIET ENTERPRISE
+BẢNG DỰ TOÁN NGÂN SÁCH SỰ KIỆN - EVENTHHD ENTERPRISE
 Khách hàng: ${user?.name || "Khách Hàng Trải Nghiệm"} (${user?.phone || "0912345678"})
 Ngày lập: ${new Date().toLocaleDateString("vi-VN")}
 =====================================================
@@ -233,25 +239,31 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `Du-toan-EventViet-${guestCount}khach.txt`;
+    a.download = `Du-toan-EventHHD-${guestCount}khach.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="h-screen bg-[#f7f9fb] text-slate-900 flex flex-col font-sans overflow-hidden selection:bg-indigo-500 selection:text-white">
+    <div className="h-[100dvh] bg-[#f7f9fb] text-slate-900 flex flex-col font-sans overflow-hidden selection:bg-brand-500 selection:text-white">
       {/* ── CUSTOMER WORKSPACE TOP NAVIGATION HEADER ──────────────────────── */}
       <header className="w-full z-40 bg-white border-b border-slate-200 shrink-0 shadow-xs">
         <div className="h-14 sm:h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Brand */}
           <div className="flex items-center gap-3">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-700 to-indigo-500 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-                EV
+            <Link href="/" className="flex items-center gap-2.5 group">
+              <div className="w-9 h-9 rounded-xl bg-brand-500/10 text-brand-600 flex items-center justify-center font-bold text-sm shadow-xs group-hover:bg-brand-500 group-hover:text-white transition-all">
+                <svg className="w-5 h-5 stroke-current fill-none stroke-[2.2]" viewBox="0 0 24 24">
+                  <path
+                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-base tracking-tight text-slate-900 leading-tight">
-                  EventViet
+                <span className="font-extrabold text-base tracking-tight text-slate-900 leading-tight group-hover:text-brand-500 transition-colors">
+                  EventHHD
                 </span>
                 <span className="text-[10px] text-slate-500 font-semibold tracking-wider uppercase">
                   Cổng Trải Nghiệm Khách Hàng
@@ -261,14 +273,14 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
           </div>
 
           {/* In-Page Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <nav className="hidden md:flex items-center gap-1.5 bg-purple-50/70 p-1 rounded-xl border border-purple-100">
             <button
               type="button"
               onClick={() => setActiveTab("chat")}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "chat"
-                  ? "bg-white text-indigo-700 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-brand-600 shadow-xs border border-purple-100"
+                  : "text-slate-600 hover:text-brand-600"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">smart_toy</span>
@@ -283,14 +295,14 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
               }}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "my_bookings"
-                  ? "bg-white text-indigo-700 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-brand-600 shadow-xs border border-purple-100"
+                  : "text-slate-600 hover:text-brand-600"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">calendar_month</span>
               <span>Lịch Hẹn Của Tôi</span>
               {myFilteredBookings.length > 0 && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-indigo-100 text-indigo-700 font-mono">
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-brand-500/10 text-brand-600 font-mono">
                   {myFilteredBookings.length}
                 </span>
               )}
@@ -301,8 +313,8 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
               onClick={() => setActiveTab("pricing")}
               className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === "pricing"
-                  ? "bg-white text-indigo-700 shadow-xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-white text-brand-600 shadow-xs border border-purple-100"
+                  : "text-slate-600 hover:text-brand-600"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">payments</span>
@@ -321,7 +333,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
               </span>
             </div>
 
-            <div className="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
+            <div className="w-8 h-8 rounded-full bg-brand-500 text-white flex items-center justify-center font-bold text-xs shadow-xs">
               {(user?.name || "K").charAt(0).toUpperCase()}
             </div>
 
@@ -342,7 +354,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
       </header>
 
       {/* ── MAIN CONTENT ACCORDING TO ACTIVE TAB ────────────────────────────── */}
-      <main className="w-full flex-1 min-h-0 flex flex-col overflow-hidden relative">
+      <main className="w-full flex-1 min-h-0 flex flex-col overflow-hidden relative pb-16 md:pb-0">
         {/* TAB 1: CHATBOT TƯ VẤN & ĐẶT LỊCH */}
         {/* LUÔN mount ChatWindow, chỉ ẩn bằng CSS để giữ nguyên state hội thoại */}
         <div
@@ -397,7 +409,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
             <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                  <span className="material-symbols-outlined text-indigo-600">calendar_month</span>
+                  <span className="material-symbols-outlined text-brand-600">calendar_month</span>
                   <span>Danh Sách Lịch Hẹn Tư Vấn Của Quý Khách</span>
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -411,7 +423,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                   value={searchPhone}
                   onChange={(e) => setSearchPhone(e.target.value)}
                   placeholder="Lọc theo số điện thoại..."
-                  className="px-3 py-1.5 text-xs bg-slate-50 border border-slate-300 rounded-lg text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-600 font-mono"
+                  className="px-3.5 py-2.5 sm:py-1.5 text-base sm:text-xs bg-slate-50 border border-slate-300 rounded-xl text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono min-h-[44px] sm:min-h-0"
                 />
               </div>
             </div>
@@ -426,7 +438,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                 <button
                   type="button"
                   onClick={() => setActiveTab("chat")}
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white font-bold text-xs rounded-xl shadow-xs transition-all inline-flex items-center gap-1.5 cursor-pointer"
                 >
                   <span className="material-symbols-outlined text-[16px]">chat</span>
                   <span>Trò Chuyện Đặt Lịch Ngay</span>
@@ -444,7 +456,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded border border-indigo-100">
+                          <span className="font-mono text-xs font-bold text-brand-600 bg-purple-50 px-2.5 py-0.5 rounded border border-purple-100">
                             #{b.id}
                           </span>
                           <span className="font-bold text-slate-900 text-sm">
@@ -485,9 +497,9 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                           <button
                             type="button"
                             onClick={() => generateIcsFile(b)}
-                            className="px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-indigo-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                            className="px-3 py-1.5 text-xs font-medium text-slate-700 hover:text-brand-600 hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
                           >
-                            <span className="material-symbols-outlined text-[16px] text-indigo-600">download</span>
+                            <span className="material-symbols-outlined text-[16px] text-brand-600">download</span>
                             <span>Tải vé .ics</span>
                           </button>
                         </div>
@@ -561,7 +573,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                             : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100"
                         }`}
                       >
-                        <span className="material-symbols-outlined text-[18px] text-indigo-600">
+                        <span className="material-symbols-outlined text-[18px] text-brand-600">
                           {t.icon}
                         </span>
                         <span className="truncate">{t.label}</span>
@@ -576,7 +588,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                     <span className="uppercase tracking-wider text-[11px]">
                       2. Quy mô số lượng khách tham dự:
                     </span>
-                    <span className="text-indigo-600 font-black text-sm font-mono">
+                    <span className="text-brand-600 font-black text-sm font-mono">
                       {guestCount} Khách
                     </span>
                   </div>
@@ -635,7 +647,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                       >
                         <p className="font-bold">{v.label}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5">{v.desc}</p>
-                        <p className="text-[10px] text-indigo-600 font-mono font-bold mt-1">
+                        <p className="text-[10px] text-brand-600 font-mono font-bold mt-1">
                           {formatVND(v.price)}/khách
                         </p>
                       </button>
@@ -667,7 +679,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                       >
                         <p className="font-bold">{av.label}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5">{av.spec}</p>
-                        <p className="text-[10px] text-indigo-600 font-mono font-bold mt-1">
+                        <p className="text-[10px] text-brand-600 font-mono font-bold mt-1">
                           {formatVND(av.price)}
                         </p>
                       </button>
@@ -699,7 +711,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                       >
                         <p className="font-bold">{f.label}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5">{f.desc}</p>
-                        <p className="text-[10px] text-indigo-600 font-mono font-bold mt-1">
+                        <p className="text-[10px] text-brand-600 font-mono font-bold mt-1">
                           {formatVND(f.price)}/khách
                         </p>
                       </button>
@@ -731,7 +743,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                       >
                         <p className="font-bold">{t.label}</p>
                         <p className="text-[10px] text-slate-400 mt-0.5">{t.desc}</p>
-                        <p className="text-[10px] text-indigo-600 font-mono font-bold mt-1">
+                        <p className="text-[10px] text-brand-600 font-mono font-bold mt-1">
                           {formatVND(t.price)}
                         </p>
                       </button>
@@ -822,7 +834,7 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
                     value={specialNotes}
                     onChange={(e) => setSpecialNotes(e.target.value)}
                     placeholder="Ví dụ: Sự kiện tổ chức bãi biển ngoài trời tại Phú Quốc, thi công gấp ca đêm trong 4 tiếng (00:00 - 05:00), yêu cầu 30 suất ăn chay cao cấp Halal riêng và xin giấy phép flycam ban đêm..."
-                    className="w-full p-3 bg-white border border-purple-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-xs placeholder:text-slate-400 shadow-inner"
+                    className="w-full p-3 bg-white border border-purple-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-base sm:text-xs placeholder:text-slate-400 shadow-inner"
                   ></textarea>
 
                   {/* Sample chips */}
@@ -1055,6 +1067,62 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
           </div>
         )}
       </main>
+
+      {/* ── MOBILE BOTTOM NAVIGATION BAR ─────────────────────────────────── */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-lg px-2 py-1 pb-[max(0.4rem,env(safe-area-inset-bottom))] flex items-center justify-around">
+        <button
+          type="button"
+          onClick={() => setActiveTab("chat")}
+          className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === "chat"
+              ? "text-brand-600 font-bold"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <div className={`p-1 rounded-xl ${activeTab === "chat" ? "bg-indigo-50" : ""}`}>
+            <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+          </div>
+          <span className="text-[10px] leading-tight mt-0.5">Tư Vấn Chat</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab("my_bookings");
+            setBookings(loadBookings().bookings);
+          }}
+          className={`relative flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === "my_bookings"
+              ? "text-brand-600 font-bold"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <div className={`p-1 rounded-xl relative ${activeTab === "my_bookings" ? "bg-indigo-50" : ""}`}>
+            <span className="material-symbols-outlined text-[20px]">calendar_month</span>
+            {myFilteredBookings.length > 0 && (
+              <span className="absolute -top-0.5 -right-1.5 w-4 h-4 bg-indigo-600 text-white rounded-full text-[9px] flex items-center justify-center font-bold font-mono">
+                {myFilteredBookings.length}
+              </span>
+            )}
+          </div>
+          <span className="text-[10px] leading-tight mt-0.5">Lịch Hẹn</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("pricing")}
+          className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all cursor-pointer ${
+            activeTab === "pricing"
+              ? "text-brand-600 font-bold"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <div className={`p-1 rounded-xl ${activeTab === "pricing" ? "bg-indigo-50" : ""}`}>
+            <span className="material-symbols-outlined text-[20px]">payments</span>
+          </div>
+          <span className="text-[10px] leading-tight mt-0.5">Dự Toán Giá</span>
+        </button>
+      </nav>
     </div>
   );
 }

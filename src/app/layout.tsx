@@ -5,14 +5,14 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#4f46e5",
+  themeColor: "#6C5CE7",
 };
 
 export const metadata: Metadata = {
-  title: "EventHHD · Hệ Thống Quản Lý & Tư Vấn Sự Kiện Thượng Hạng",
+  title: "EventHHD · Nền Tảng Quản Lý & Tư Vấn Sự Kiện Thượng Hạng",
   description:
     "Nền tảng công nghệ quản lý, tổ chức sự kiện thượng hạng và báo giá tự động chuẩn hóa hàng đầu tại Việt Nam.",
-  keywords: "EventHHD, tổ chức sự kiện, Gala Dinner, hội nghị khách hàng, tiệc cưới luxury, báo giá sự kiện",
+  keywords: "EventHHD, tổ chức sự kiện, Gala Dinner, hội nghị khách hàng, tiệc cưới luxury, báo giá sự kiện, trợ lý AI",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
         <link

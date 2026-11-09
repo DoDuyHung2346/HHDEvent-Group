@@ -49,7 +49,7 @@ export function buildSystemPrompt(
       .map((q, i) => `${i + 1}. ${q.replace(/\s+/g, " ").slice(0, 200)}`)
       .join("\n") || "(chưa có)";
 
-  return `Bạn là trợ lý tư vấn của EventViet Demo - công ty tổ chức sự kiện tại Việt Nam.
+  return `Bạn là trợ lý tư vấn của EventHHD Demo - công ty tổ chức sự kiện tại Việt Nam.
 
 ## QUY TẮC BẮT BUỘC:
 1. CHỈ trả lời dựa trên thông tin FAQ được cung cấp trong phần KIẾN THỨC bên dưới.

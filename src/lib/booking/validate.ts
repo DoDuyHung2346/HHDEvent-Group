@@ -59,6 +59,11 @@ export function validateDate(dateStr: string): string | null {
   // Kiểm tra ngày hợp lệ
   const dateObj = new Date(year, month - 1, day);
   if (dateObj.getDate() !== day) return "Ngày không hợp lệ";
+
+  // Không nhận lịch tư vấn vào Chủ nhật
+  if (dateObj.getDay() === 0) {
+    return "EventHHD không nhận đặt lịch vào Chủ nhật";
+  }
   
   return null;
 }

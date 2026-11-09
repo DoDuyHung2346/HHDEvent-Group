@@ -22,13 +22,13 @@ export interface CompanyProfile {
 }
 
 export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
-  companyName: "EventViet Corporation",
+  companyName: "EventHHD Corporation",
   slogan: "Kiến tạo Sự kiện Đẳng cấp & Dấu ấn Độc bản",
-  hotline: "1900 8899 / 0909 888 999",
-  email: "contact@eventviet.vn",
-  address: "Tầng 18, Tòa nhà Bitexco Financial Tower, Quận 1, TP. Hồ Chí Minh",
+  hotline: "1900 6886",
+  email: "vip-events@eventhhd.vn",
+  address: "144 Xuân Thủy, Phường Cầu Giấy, Hà Nội",
   workingHours: "Thứ Hai - Thứ Bảy: 08:00 - 17:30 (Chủ Nhật trực hotline VIP)",
-  taxCode: "0314892408",
+  taxCode: "",
   representative: "Nguyễn Hoàng Duy - Giám đốc Điều hành",
 };
 
@@ -36,7 +36,7 @@ export const INITIAL_DOCUMENTS: CompanyDocument[] = [
   {
     id: "doc-01",
     title: "Hồ Sơ Năng Lực Doanh Nghiệp (Company Profile 2026)",
-    fileName: "EventViet-Capability-Profile-2026.pdf",
+    fileName: "EventHHD-Capability-Profile-2026.pdf",
     fileSize: "4.8 MB",
     category: "proposal",
     uploadedAt: "2026-10-15T09:00:00Z",
@@ -45,7 +45,7 @@ export const INITIAL_DOCUMENTS: CompanyDocument[] = [
   {
     id: "doc-02",
     title: "Chính Sách Đặt Cọc, Bảo Hiểm & Hoàn Hủy Sự Kiện",
-    fileName: "EventViet-Cancellation-Policy-V4.pdf",
+    fileName: "EventHHD-Cancellation-Policy-V4.pdf",
     fileSize: "1.2 MB",
     category: "policy",
     uploadedAt: "2026-10-20T14:30:00Z",
@@ -54,7 +54,7 @@ export const INITIAL_DOCUMENTS: CompanyDocument[] = [
   {
     id: "doc-03",
     title: "Mẫu Hợp Đồng Dịch Vụ Tổ Chức Sự Kiện Song Ngữ",
-    fileName: "EventViet-Standard-Contract-Template.docx",
+    fileName: "EventHHD-Standard-Contract-Template.docx",
     fileSize: "850 KB",
     category: "contract",
     uploadedAt: "2026-10-28T11:15:00Z",
