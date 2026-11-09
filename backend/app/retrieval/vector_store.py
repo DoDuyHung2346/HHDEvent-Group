@@ -42,6 +42,20 @@ class VectorStore:
                 )
             )
 
+        # Qdrant Cloud requires an explicit payload index for filter fields.
+        # Local Qdrant may scan without it, which previously hid this issue.
+        if settings.VECTOR_BACKEND == "qdrant_server":
+            for field_name, field_schema in (
+                ("active", qmodels.PayloadSchemaType.INTEGER),
+                ("doc_id", qmodels.PayloadSchemaType.KEYWORD),
+            ):
+                self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name=field_name,
+                    field_schema=field_schema,
+                    wait=True,
+                )
+
     def upsert_chunks(self, chunk_ids: List[str], vectors: List[List[float]], payloads: List[Dict[str, Any]]):
         points = []
         for cid, vec, payload in zip(chunk_ids, vectors, payloads):
@@ -67,16 +81,15 @@ class VectorStore:
                 ]
             )
 
-        # qdrant-client search
-        try:
+        # qdrant-client >=1.10 uses query_points. Older clients expose search.
+        if hasattr(self.client, "query_points"):
             hits = self.client.query_points(
                 collection_name=self.collection_name,
                 query=query_vector,
                 limit=top_k,
                 query_filter=query_filter
             ).points
-        except Exception:
-            # Fallback search method for older client API
+        else:
             hits = self.client.search(
                 collection_name=self.collection_name,
                 query_vector=query_vector,
