@@ -64,10 +64,35 @@ export function getPreliminaryEventEstimate(message: string, history: ChatTurn[]
   const asksForEstimate = /(giá|bao nhiêu|chi phí|báo giá|dự toán|ước tính|ngân sách|budget)/i.test(current) || (useHistory && budget !== null);
   const isEventRequest = /(sự kiện|year[ -]?end|\byep\b|tất niên|đám cưới|tiệc cưới|wedding|hội nghị|hội thảo|khai trương|ra mắt|sinh nhật|gala|team building)/i.test(userContext);
 
-  if (!guestCount || !asksForEstimate || !isEventRequest) return null;
+  if (!asksForEstimate || !isEventRequest) return null;
+
+  const eventLabel = getEventLabel(userContext);
+  // A named event plus a budget is a qualified sales lead, but estimating
+  // without guest count/venue would invent a per-person scope. Escalate to a
+  // specialist immediately and open the booking form instead of replying with
+  // a generic request for more information.
+  if (!guestCount && budget && eventLabel !== "sự kiện") {
+    return {
+      answer: `Em đã ghi nhận nhu cầu tổ chức ${eventLabel} với ngân sách dự kiến ${formatVnd(budget)}. Hiện chưa có đủ quy mô khách và địa điểm để đưa ra mức dự toán đáng tin cậy, nên em không muốn báo giá theo cảm tính. Em đã mở phiếu đặt lịch bên dưới để chuyên viên EventHHD trao đổi, đề xuất phương án phù hợp và báo giá chi tiết cho anh/chị.`,
+      options: [
+        { id: "brief-booking", label: "Đặt lịch với chuyên viên", action: "open_booking", payload: `Tư vấn ${eventLabel}, ngân sách ${formatVnd(budget)}` },
+        { id: "brief-requirements", label: "Tự chọn hạng mục & xem giá", action: "open_requirements", payload: "" },
+      ],
+      related_questions: [
+        "Tôi cần chuẩn bị gì trước buổi tư vấn?",
+        "Quy trình làm việc với EventHHD như thế nào?",
+        "Tôi muốn xem các hạng mục có thể tùy chỉnh.",
+      ],
+      needs_booking: true,
+      needs_requirements: false,
+      matched_faq_ids: ["event-brief-needs-consultation"],
+      source: "ai",
+    };
+  }
+
+  if (!guestCount) return null;
 
   const estimates = TIERS.map((tier) => ({ ...tier, total: tier.fixed + tier.perGuest * guestCount }));
-  const eventLabel = getEventLabel(userContext);
   const budgetNote = budget
     ? `\n\nNgân sách bạn nêu là ${formatVnd(budget)} (${formatVnd(Math.round(budget / guestCount))}/khách). ${budget >= estimates[0].total && budget <= estimates[2].total ? "Mức này có thể cân đối được, nhưng cần chốt hạng mục ưu tiên với chuyên viên." : budget < estimates[0].total ? "Mức này đang thấp hơn phương án tối giản trong catalog; chuyên viên cần tối ưu lại phạm vi dịch vụ." : "Mức này cao hơn phương án nâng cao trong catalog; chuyên viên có thể tư vấn thêm hạng mục hoặc venue phù hợp."}`
     : "";
