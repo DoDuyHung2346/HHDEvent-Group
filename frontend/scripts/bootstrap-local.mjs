@@ -15,8 +15,14 @@ if (!existsSync(nextPackage)) {
   const install = spawnSync(npmCommand, ["install", "--legacy-peer-deps", "--workspaces=false"], {
     cwd: frontendDir,
     stdio: "inherit",
-    shell: false,
+    // .cmd files need cmd.exe on Windows; invoking them without a shell can
+    // fail silently before npm has a chance to print its error.
+    shell: process.platform === "win32",
   });
+  if (install.error) {
+    console.error("Không thể chạy npm install:", install.error.message);
+    process.exit(1);
+  }
   if (install.status !== 0) process.exit(install.status ?? 1);
 }
 
