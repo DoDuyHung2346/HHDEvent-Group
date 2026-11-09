@@ -1,0 +1,29 @@
+# Production runtime: cloud embeddings (Gemini) and Qdrant Cloud.
+# Deliberately excludes sentence-transformers/Torch; those are needed only for
+# EMBED_PROVIDER=local_st and make small cloud instances unnecessarily heavy.
+fastapi
+uvicorn[standard]
+pydantic>=2
+pydantic-settings
+python-multipart
+httpx
+pyyaml
+python-dotenv
+sqlalchemy>=2
+psycopg[binary]>=3.2
+tenacity
+slowapi
+cachetools
+numpy
+google-genai
+qdrant-client
+bm25s
+pyvi
+unidecode
+pymupdf
+pymupdf4llm
+python-docx
+openpyxl
+pandas
+beautifulsoup4
+markdownify

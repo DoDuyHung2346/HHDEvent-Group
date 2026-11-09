@@ -72,6 +72,7 @@ export default function AdminDashboardPage() {
 
   // Tab State: analytics | crm | conversations | documents | pricing | faq | company_info | ai_test
   const [activeTab, setActiveTab] = useState<"analytics" | "crm" | "conversations" | "staff" | "documents" | "pricing" | "faq" | "company_info" | "ai_test">("analytics");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // CRM Bookings State
   const [bookingsList, setBookingsList] = useState<Booking[]>([]);
@@ -159,11 +160,15 @@ export default function AdminDashboardPage() {
   const refreshRAGDocs = () => {
     checkRAGHealth().then((res) => {
       setIsRagOnline(res.ok);
-      if (res.ok) {
-        listRAGDocuments()
-          .then((docs) => setRagDocs(docs))
-          .catch((e) => console.error("Lỗi tải danh sách RAG docs:", e));
-      }
+      // Metadata/chunks cloud can still be read through the Next.js fallback
+      // while FastAPI is being restarted. This keeps the Admin UI truthful:
+      // documents exist, but upload/chat retrieval remain unavailable.
+      listRAGDocuments()
+        .then((docs) => setRagDocs(docs))
+        .catch((e) => {
+          setRagDocs([]);
+          console.error("Lỗi tải danh sách RAG docs:", e);
+        });
     });
   };
 
@@ -440,7 +445,7 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* ── ADMIN NAVIGATION TABS (5 PHÂN HỆ RÕ RÀNG) ────────────────────── */}
-      <div className="bg-white border-b border-slate-200 sticky top-14 sm:top-16 z-40 shadow-xs">
+      <div className="hidden sm:block bg-white border-b border-slate-200 sticky top-16 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <div className="flex w-full items-center gap-1 sm:gap-2 overflow-x-auto py-2 no-scrollbar">
             <button
@@ -571,8 +576,50 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
+      {/* Mobile app navigation: primary destinations stay within thumb reach;
+          secondary admin tools open from a compact bottom sheet. */}
+      <div className="sm:hidden">
+        {isMobileMenuOpen && (
+          <>
+            <button type="button" aria-label="Đóng menu" onClick={() => setIsMobileMenuOpen(false)} className="fixed inset-0 z-40 bg-slate-950/35" />
+            <div className="fixed bottom-[72px] inset-x-0 z-50 rounded-t-3xl bg-white px-5 pt-4 pb-5 shadow-[0_-12px_36px_rgba(15,23,42,0.18)] animate-in slide-in-from-bottom duration-200">
+              <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-slate-200" />
+              <div className="flex items-center justify-between mb-4"><div><p className="text-xs font-bold text-purple-700">QUẢN TRỊ</p><h3 className="font-black text-slate-900">Công cụ khác</h3></div><button type="button" onClick={() => setIsMobileMenuOpen(false)} className="w-9 h-9 rounded-full bg-slate-100 text-slate-600"><span className="material-symbols-outlined text-[20px]">close</span></button></div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { id: "staff", icon: "groups", label: "Đội ngũ & lịch trực" },
+                  { id: "pricing", icon: "payments", label: "Gói dịch vụ & giá" },
+                  { id: "faq", icon: "quiz", label: "Kho tri thức FAQ" },
+                  { id: "company_info", icon: "corporate_fare", label: "Thông tin doanh nghiệp" },
+                  { id: "ai_test", icon: "psychology", label: "Kiểm tra AI" },
+                ].map((item) => (
+                  <button key={item.id} type="button" onClick={() => { setActiveTab(item.id as typeof activeTab); setIsMobileMenuOpen(false); if (item.id === "ai_test") checkAIStatus(); }} className={`min-h-16 rounded-xl border p-3 text-left flex items-center gap-2.5 ${activeTab === item.id ? "border-purple-500 bg-purple-50 text-purple-800" : "border-slate-200 bg-slate-50 text-slate-700"}`}>
+                    <span className="material-symbols-outlined text-[21px]">{item.icon}</span><span className="text-xs font-bold leading-tight">{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+        <nav aria-label="Điều hướng quản trị trên điện thoại" className="fixed bottom-0 inset-x-0 z-50 h-[72px] bg-white/95 backdrop-blur border-t border-slate-200 px-2 pb-[max(0.4rem,env(safe-area-inset-bottom))] pt-1 flex items-start justify-around shadow-[0_-4px_16px_rgba(15,23,42,0.08)]">
+          {[
+            { id: "analytics", icon: "monitoring", label: "Tổng quan" },
+            { id: "crm", icon: "support_agent", label: "Lịch hẹn" },
+            { id: "conversations", icon: "forum", label: "Hội thoại" },
+            { id: "documents", icon: "upload_file", label: "Tài liệu" },
+          ].map((item) => (
+            <button key={item.id} type="button" onClick={() => { setActiveTab(item.id as typeof activeTab); setIsMobileMenuOpen(false); }} className={`min-w-14 flex-1 max-w-20 h-15 rounded-xl flex flex-col items-center justify-center gap-0.5 ${activeTab === item.id ? "text-purple-700" : "text-slate-500"}`}>
+              <span className={`material-symbols-outlined text-[23px] ${activeTab === item.id ? "bg-purple-100 px-3 py-1 rounded-xl" : ""}`}>{item.icon}</span><span className="text-[10px] font-semibold truncate max-w-full">{item.label}</span>
+            </button>
+          ))}
+          <button type="button" aria-expanded={isMobileMenuOpen} onClick={() => setIsMobileMenuOpen((value) => !value)} className={`min-w-14 flex-1 max-w-20 h-15 rounded-xl flex flex-col items-center justify-center gap-0.5 ${(isMobileMenuOpen || ["staff", "pricing", "faq", "company_info", "ai_test"].includes(activeTab)) ? "text-purple-700" : "text-slate-500"}`}>
+            <span className={`material-symbols-outlined text-[23px] ${(isMobileMenuOpen || ["staff", "pricing", "faq", "company_info", "ai_test"].includes(activeTab)) ? "bg-purple-100 px-3 py-1 rounded-xl" : ""}`}>grid_view</span><span className="text-[10px] font-semibold">Thêm</span>
+          </button>
+        </nav>
+      </div>
+
       {/* ── MAIN WORKSPACE CONTENT ────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 sm:pb-6 flex-1">
         {toastMessage && (
           <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs animate-in slide-in-from-bottom duration-200 border border-slate-700">
             <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
@@ -923,13 +970,15 @@ export default function AdminDashboardPage() {
                   <h4 className="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
                     <span>Hệ Thống Pipeline RAG Tri Thức</span>
                     <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold uppercase ${isRagOnline ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-amber-50 text-amber-700 border border-amber-200"}`}>
-                      {isRagOnline ? "Backend RAG: Sẵn sàng (Port 8000)" : "Backend RAG: Ngoại tuyến"}
+                      {isRagOnline ? "Backend RAG: Sẵn sàng" : ragDocs.length > 0 ? "Kho cloud sẵn sàng · AI ngoại tuyến" : "Backend RAG: Ngoại tuyến"}
                     </span>
                   </h4>
                   <p className="text-[11px] text-slate-500 mt-0.5">
                     {isRagOnline
-                      ? "Chỉ mục Qdrant Vector + BM25s tokenizer Tiếng Việt + SQLite DB đang hoạt động ổn định."
-                      : "Khuyến nghị: Chạy `uvicorn app.main:app --port 8000` tại thư mục backend để bật trọn vẹn pipeline."}
+                      ? "Chỉ mục Qdrant Vector + PostgreSQL và truy xuất AI đang hoạt động ổn định."
+                      : ragDocs.length > 0
+                        ? "Tài liệu đã có trong Supabase cloud. Cần kết nối FastAPI public để chatbot truy xuất và trả lời theo RAG."
+                        : "Cần cấu hình URL FastAPI public để đọc kho RAG cloud."}
                   </p>
                 </div>
               </div>
