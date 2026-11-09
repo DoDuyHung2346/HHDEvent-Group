@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Float, Text, LargeBinary
+from sqlalchemy import Column, String, Integer, Float, Text, LargeBinary, ForeignKey
 from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
@@ -27,7 +27,7 @@ class ChunkModel(Base):
     __tablename__ = "chunks"
 
     chunk_id = Column(String, primary_key=True)
-    doc_id = Column(String, nullable=False)
+    doc_id = Column(String, ForeignKey("documents.doc_id"), nullable=False)
     ordinal = Column(Integer, nullable=False)
     parent_id = Column(String, nullable=True)
     breadcrumb = Column(String, default="")
@@ -51,7 +51,7 @@ class ChunkQuestionModel(Base):
     __tablename__ = "chunk_questions"
 
     qid = Column(String, primary_key=True)
-    chunk_id = Column(String, nullable=False)
+    chunk_id = Column(String, ForeignKey("chunks.chunk_id"), nullable=False)
     question = Column(String, nullable=False)
     embedding = Column(LargeBinary, nullable=True)  # float32 bytes
 
@@ -59,7 +59,7 @@ class ParentModel(Base):
     __tablename__ = "parents"
 
     parent_id = Column(String, primary_key=True)
-    doc_id = Column(String, nullable=False)
+    doc_id = Column(String, ForeignKey("documents.doc_id"), nullable=False)
     text = Column(Text, nullable=False)
 
 class IngestJobModel(Base):

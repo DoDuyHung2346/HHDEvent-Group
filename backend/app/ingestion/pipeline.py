@@ -206,6 +206,9 @@ def run_ingest_pipeline(job_id: str, doc_id: str, file_path: Path, filename: str
             active=1
         )
         db.add(doc_record)
+        # PostgreSQL enforces chunks.doc_id immediately. Flush the parent
+        # before adding children instead of relying on ORM batch ordering.
+        db.flush()
 
         chunk_ids: List[str] = []
         payloads: List[dict] = []
