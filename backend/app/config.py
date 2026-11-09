@@ -51,6 +51,15 @@ class Settings(BaseSettings):
     QDRANT_API_KEY: Optional[str] = None
     QDRANT_COLLECTION: str = "kb_chunks"
 
+    # Original files are stored locally by default. Production uses a private
+    # Supabase Storage bucket while PostgreSQL and Qdrant Cloud retain the
+    # derived RAG records and vectors across backend restarts.
+    RAG_FILE_STORE: str = "local"  # local | supabase
+    SUPABASE_STORAGE_BUCKET: str = "rag-documents"
+    SUPABASE_STORAGE_PREFIX: str = "documents"
+    NEXT_PUBLIC_SUPABASE_URL: Optional[str] = None
+    SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
+
     # DB / Cache
     DB_URL: str = f"sqlite:///{(BASE_DIR / 'data' / 'app.db').as_posix()}"
     CACHE_BACKEND: str = "memory"
@@ -99,6 +108,19 @@ class Settings(BaseSettings):
                 "GEMINI_API_KEY không phải Google Gemini API key hợp lệ (thường bắt đầu bằng 'AIza'). "
                 "Key Vilao/proxy phải đặt tại LLM_API_KEY; embedding cần Google key hoặc EMBED_PROVIDER=local_st."
             )
+        return None
+
+    def persistence_configuration_error(self) -> Optional[str]:
+        """Return a human-readable error before accepting a cloud upload."""
+        if self.RAG_FILE_STORE == "supabase":
+            if not (self.NEXT_PUBLIC_SUPABASE_URL or "").strip():
+                return "Thiếu NEXT_PUBLIC_SUPABASE_URL cho Supabase Storage."
+            if not (self.SUPABASE_SERVICE_ROLE_KEY or "").strip():
+                return "Thiếu SUPABASE_SERVICE_ROLE_KEY cho Supabase Storage."
+            if self.DB_URL.startswith("sqlite"):
+                return "RAG_FILE_STORE=supabase cần DB_URL PostgreSQL để metadata/chunk được lưu bền vững."
+        if self.VECTOR_BACKEND == "qdrant_server" and not (self.QDRANT_URL or "").strip():
+            return "VECTOR_BACKEND=qdrant_server cần QDRANT_URL."
         return None
 
     def load_company_info(self) -> Dict[str, Any]:

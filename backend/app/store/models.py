@@ -14,6 +14,8 @@ class DocumentModel(Base):
     status = Column(String, default="queued")  # queued|processing|ready|failed|deleted
     sha256 = Column(String, nullable=False)
     size_bytes = Column(Integer, default=0)
+    storage_backend = Column(String, default="local")
+    storage_path = Column(String, nullable=True)
     uploaded_at = Column(String, nullable=False)
     effective_date = Column(String, nullable=True)
     expires_date = Column(String, nullable=True)

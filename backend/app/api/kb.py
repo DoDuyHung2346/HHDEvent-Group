@@ -16,6 +16,7 @@ from app.ingestion.jobs import enqueue_ingest_job
 from app.ingestion.pipeline import update_kb_version, rebuild_bm25_from_db
 from app.retrieval.hybrid import hybrid_retrieve
 from app.retrieval.vector_store import vector_store
+from app.store.file_storage import file_storage
 
 router = APIRouter(dependencies=[Depends(verify_admin_token)])
 
@@ -35,6 +36,9 @@ async def upload_document(
     embedding_error = settings.embedding_configuration_error()
     if embedding_error:
         raise HTTPException(status_code=503, detail=embedding_error)
+    persistence_error = settings.persistence_configuration_error()
+    if persistence_error:
+        raise HTTPException(status_code=503, detail=persistence_error)
 
     suffix = Path(file.filename).suffix.lower()
     if suffix not in ALLOWED_EXTENSIONS:
@@ -170,6 +174,10 @@ def delete_document(doc_id: str, db: Session = Depends(get_db)):
         vector_store.delete_by_doc_id(doc_id)
     except Exception as exc:
         warnings.append(f"Vector store sẽ được làm sạch khi khởi động lại: {exc}")
+    try:
+        file_storage.delete(doc.storage_path)
+    except Exception as exc:
+        warnings.append(f"Không thể xóa file gốc trên object storage: {exc}")
     try:
         rebuild_bm25_from_db(db)
         update_kb_version(db)

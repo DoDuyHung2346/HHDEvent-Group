@@ -16,6 +16,7 @@ from app.ingestion.quality import inspect_quality
 from app.retrieval.vector_store import vector_store
 from app.retrieval.bm25_index import bm25_holder
 from app.retrieval.tokenizer_vi import tokenize_vi, tokenize_ascii
+from app.store.file_storage import file_storage
 
 def update_job_progress(
     job_id: str,
@@ -103,6 +104,7 @@ def run_ingest_pipeline(job_id: str, doc_id: str, file_path: Path, filename: str
     logger.info(f"Starting ingestion pipeline for job {job_id}, file {filename}")
     db: Session = SessionLocal()
     vectors_published = False
+    remote_storage_path: Optional[str] = None
     try:
         # Stage 1: Validate
         update_job_progress(job_id, stage="validate", progress=0.1)
@@ -111,6 +113,16 @@ def run_ingest_pipeline(job_id: str, doc_id: str, file_path: Path, filename: str
         file_size = file_path.stat().st_size
         with open(file_path, "rb") as f:
             file_sha256 = hashlib.sha256(f.read()).hexdigest()
+
+        # Keep the original in durable storage before extracting it. The local
+        # temporary file is still used by parsers and may be discarded later.
+        if settings.RAG_FILE_STORE == "supabase":
+            safe_name = Path(filename).name.replace(" ", "_")
+            remote_storage_path = (
+                f"{settings.SUPABASE_STORAGE_PREFIX.strip('/')}/{doc_id}/"
+                f"{file_sha256[:16]}_{safe_name}"
+            )
+            file_storage.upload(file_path, remote_storage_path)
 
         # Stage 2: Parse
         update_job_progress(job_id, stage="parse", progress=0.25)
@@ -184,6 +196,8 @@ def run_ingest_pipeline(job_id: str, doc_id: str, file_path: Path, filename: str
             status="processing",
             sha256=file_sha256,
             size_bytes=file_size,
+            storage_backend=file_storage.backend_name,
+            storage_path=remote_storage_path,
             uploaded_at=datetime.utcnow().isoformat(),
             effective_date=metadata.get("effective_date"),
             expires_date=metadata.get("expires_date"),
@@ -290,6 +304,11 @@ def run_ingest_pipeline(job_id: str, doc_id: str, file_path: Path, filename: str
                 vector_store.delete_by_doc_id(doc_id)
             except Exception as cleanup_error:
                 logger.error("Không thể dọn vector của job thất bại %s: %s", job_id, cleanup_error)
+        if remote_storage_path:
+            try:
+                file_storage.delete(remote_storage_path)
+            except Exception as cleanup_error:
+                logger.error("Không thể dọn file object storage của job thất bại %s: %s", job_id, cleanup_error)
         # Restore the sparse index from the persisted DB if an uncommitted
         # rebuild failed midway through the publish transaction.
         restore_db = SessionLocal()

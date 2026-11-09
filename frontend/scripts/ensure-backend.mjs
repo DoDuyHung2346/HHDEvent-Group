@@ -2,7 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const candidates = process.platform === "win32" ? ["python", "py"] : ["python3", "python"];
 const python = candidates.find((command) => {
-  const check = spawnSync(command, ["-c", "import fastapi, uvicorn, qdrant_client, bm25s"], {
+  const check = spawnSync(command, ["-c", "import fastapi, uvicorn, qdrant_client, bm25s, psycopg"], {
     stdio: "ignore",
     shell: false,
   });

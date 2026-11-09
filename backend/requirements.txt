@@ -7,6 +7,7 @@ httpx
 pyyaml
 python-dotenv
 sqlalchemy>=2
+psycopg[binary]>=3.2
 tenacity
 slowapi
 cachetools
