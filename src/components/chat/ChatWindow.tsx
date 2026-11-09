@@ -1152,13 +1152,13 @@ export default function ChatWindow({
 
         {/* Loading Indicator */}
         {isLoading && (
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3 animate-in fade-in duration-200">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                  <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
-                  </svg>
-                </div>
-            <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
+              </svg>
+            </div>
+            <div className="px-3.5 py-2.5 bg-white rounded-2xl rounded-tl-xs border border-purple-100 shadow-xs flex items-center">
               <TypingIndicator />
             </div>
           </div>
@@ -1166,7 +1166,7 @@ export default function ChatWindow({
       </div>
 
       {/* Chat Input & Command Console */}
-      <div className="p-2 sm:p-3 bg-[#f2f4f6] border-t border-slate-200 shrink-0 sticky bottom-0 z-10 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+      <div className="p-2 sm:p-3 bg-purple-50/40 border-t border-purple-100 shrink-0 sticky bottom-0 z-10 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
         <form
           className="space-y-1.5 sm:space-y-2"
           onSubmit={(e) => {
@@ -1179,7 +1179,7 @@ export default function ChatWindow({
             <button
               type="button"
               onClick={() => handleUserSendMessage("Tôi muốn gặp chuyên viên tư vấn trực tiếp 1-1")}
-              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-purple-100/90 text-slate-700 hover:border-brand-400 hover:bg-purple-50/50 hover:text-brand-600  transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
             >
               <span>📅</span>
               <span>Đặt lịch 1-1</span>
@@ -1187,7 +1187,7 @@ export default function ChatWindow({
             <button
               type="button"
               onClick={() => handleUserSendMessage("Khoảng giá tham khảo các gói sự kiện thế nào?")}
-              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-purple-100/90 text-slate-700 hover:border-brand-400 hover:bg-purple-50/50 hover:text-brand-600  transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
             >
               <span>💰</span>
               <span>Báo giá tham khảo</span>
@@ -1195,7 +1195,7 @@ export default function ChatWindow({
             <button
               type="button"
               onClick={() => handleUserSendMessage("Gói Year-end Party gồm những hạng mục nào?")}
-              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-purple-100/90 text-slate-700 hover:border-brand-400 hover:bg-purple-50/50 hover:text-brand-600  transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
             >
               <span>🎉</span>
               <span>Year-end Party</span>
@@ -1203,7 +1203,7 @@ export default function ChatWindow({
             <button
               type="button"
               onClick={() => handleUserSendMessage("Quy trình đặt cọc và thanh toán hợp đồng sự kiện?")}
-              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-slate-700 hover:border-brand-300 hover:text-brand-600 hover:text-indigo-600 transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
+              className="shrink-0 px-2.5 py-1 rounded-full bg-white border border-purple-100/90 text-slate-700 hover:border-brand-400 hover:bg-purple-50/50 hover:text-brand-600  transition-all font-medium flex items-center gap-1 active:scale-95 shadow-2xs cursor-pointer"
             >
               <span>📋</span>
               <span>Hợp đồng & Đặt cọc</span>
