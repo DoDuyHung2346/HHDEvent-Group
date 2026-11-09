@@ -373,9 +373,9 @@ export default function AdminDashboardPage() {
     <div className="min-h-screen bg-[#f8fafc] flex flex-col font-sans text-slate-900">
       {/* ── ADMIN DEDICATED TOP HEADER ────────────────────────────────────── */}
       <header className="w-full z-50 bg-slate-950 text-white shadow-md border-b border-slate-800 sticky top-0 shrink-0">
-        <div className="h-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-sm shadow-md">
+        <div className="h-14 sm:h-16 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-brand-500/20 text-brand-400 border border-brand-500/30 flex items-center justify-center font-bold text-sm shadow-md shrink-0">
               <svg className="w-5 h-5 stroke-current fill-none stroke-[2.2]" viewBox="0 0 24 24">
                 <path
                   d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
@@ -384,25 +384,25 @@ export default function AdminDashboardPage() {
                 />
               </svg>
             </div>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-bold text-white text-base tracking-tight">
+                <span className="font-bold text-white text-sm sm:text-base tracking-tight truncate">
                   EventHHD
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-800 font-semibold">
+                <span className="hidden sm:inline text-[10px] font-mono px-2 py-0.5 rounded bg-brand-950 text-brand-300 border border-brand-800 font-semibold">
                   PORTAL QUẢN TRỊ NỘI BỘ
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400">Giám Sát Chatbot, CRM Lịch Hẹn & Tài Liệu Doanh Nghiệp</p>
+              <p className="hidden sm:block text-[11px] text-slate-400">Giám Sát Chatbot, CRM Lịch Hẹn & Tài Liệu Doanh Nghiệp</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Nút Xem Lịch Sử Đăng Nhập */}
             <button
               type="button"
               onClick={() => setIsLoginHistoryOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-200 text-xs font-semibold border border-purple-800 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg bg-purple-950/80 hover:bg-purple-900 text-purple-200 text-xs font-semibold border border-purple-800 transition-colors cursor-pointer"
               title="Xem nhật ký lịch sử các lần đăng nhập hệ thống"
             >
               <span className="material-symbols-outlined text-[16px] text-purple-400">manage_history</span>
@@ -419,7 +419,7 @@ export default function AdminDashboardPage() {
               <span>Xem Web Khách Hàng</span>
             </Link>
 
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+            <div className="flex items-center gap-2 sm:pl-2 sm:border-l border-slate-800">
               <div className="hidden md:flex flex-col text-right">
                 <span className="text-xs font-bold text-white">{admin?.name || "Ban Quản Trị"}</span>
                 <span className="text-[10px] text-slate-400 font-mono">{admin?.email}</span>
@@ -428,7 +428,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-2 sm:px-3 py-1.5 bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold rounded-lg shadow-xs transition-colors flex items-center gap-1 cursor-pointer"
                 title="Đăng xuất khỏi bảng điều khiển"
               >
                 <span className="material-symbols-outlined text-[16px]">logout</span>
@@ -440,34 +440,34 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* ── ADMIN NAVIGATION TABS (5 PHÂN HỆ RÕ RÀNG) ────────────────────── */}
-      <div className="bg-white border-b border-slate-200 sticky top-16 z-40 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto py-2.5">
+      <div className="bg-white border-b border-slate-200 sticky top-14 sm:top-16 z-40 shadow-xs">
+        <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+          <div className="flex w-full items-center gap-1 sm:gap-2 overflow-x-auto py-2 no-scrollbar">
             <button
               type="button"
               onClick={() => setActiveTab("analytics")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Thông số & tỉ lệ Chatbot" aria-label="Thông số & tỉ lệ Chatbot" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "analytics"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">monitoring</span>
-              <span>Thông Số & Tỉ Lệ Chatbot</span>
+              <span className="hidden sm:inline">Thông Số & Tỉ Lệ Chatbot</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("crm")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Giám sát lịch hẹn CRM" aria-label="Giám sát lịch hẹn CRM" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "crm"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">support_agent</span>
-              <span>Giám Sát Lịch Hẹn CRM</span>
-              <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 font-mono">
+              <span className="hidden sm:inline">Giám Sát Lịch Hẹn CRM</span>
+              <span className="hidden sm:inline px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 font-mono">
                 {bookingsList.length}
               </span>
             </button>
@@ -475,96 +475,96 @@ export default function AdminDashboardPage() {
             <button
               type="button"
               onClick={() => setActiveTab("conversations")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Hội thoại khách hàng" aria-label="Hội thoại khách hàng" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "conversations"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">forum</span>
-              <span>Hội Thoại Khách Hàng</span>
+              <span className="hidden sm:inline">Hội Thoại Khách Hàng</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("staff")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Đội ngũ & lịch trực" aria-label="Đội ngũ & lịch trực" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "staff"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">groups</span>
-              <span>Đội Ngũ & Lịch Trực</span>
+              <span className="hidden sm:inline">Đội Ngũ & Lịch Trực</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("documents")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Tài liệu & upload thông tin" aria-label="Tài liệu & upload thông tin" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "documents"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">upload_file</span>
-              <span>Tài Liệu & Upload Thông Tin</span>
+              <span className="hidden sm:inline">Tài Liệu & Upload Thông Tin</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("pricing")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Gói dịch vụ & giá" aria-label="Gói dịch vụ & giá" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "pricing"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">payments</span>
-              <span>Gói Dịch Vụ & Giá</span>
+              <span className="hidden sm:inline">Gói Dịch Vụ & Giá</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("faq")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Kho tri thức FAQ" aria-label="Kho tri thức FAQ" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "faq"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">quiz</span>
-              <span>Kho Tri Thức FAQ</span>
+              <span className="hidden sm:inline">Kho Tri Thức FAQ</span>
             </button>
 
             <button
               type="button"
               onClick={() => setActiveTab("company_info")}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Thông tin doanh nghiệp" aria-label="Thông tin doanh nghiệp" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "company_info"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">corporate_fare</span>
-              <span>Thông Tin Doanh Nghiệp</span>
+              <span className="hidden sm:inline">Thông Tin Doanh Nghiệp</span>
             </button>
 
             <button
               type="button"
               onClick={() => { setActiveTab("ai_test"); checkAIStatus(); }}
-              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+              title="Kiểm tra AI" aria-label="Kiểm tra AI" className={`px-2.5 sm:px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "ai_test"
                   ? "bg-purple-700 text-white shadow-xs"
                   : "text-slate-600 hover:bg-slate-100"
               }`}
             >
               <span className="material-symbols-outlined text-[17px]">psychology</span>
-              <span>Kiểm Tra AI</span>
+              <span className="hidden sm:inline">Kiểm Tra AI</span>
             </button>
           </div>
 
-          <div className="flex items-center gap-2 py-2 text-xs">
+          <div className="hidden sm:flex items-center gap-2 py-2 text-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-slate-600 font-medium">Hệ thống Quản trị sẵn sàng</span>
           </div>
@@ -572,7 +572,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* ── MAIN WORKSPACE CONTENT ────────────────────────────────────────── */}
-      <main className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1">
+      <main className="max-w-7xl mx-auto w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1">
         {toastMessage && (
           <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs animate-in slide-in-from-bottom duration-200 border border-slate-700">
             <span className="material-symbols-outlined text-emerald-400 text-[18px]">check_circle</span>
@@ -734,8 +734,8 @@ export default function AdminDashboardPage() {
           <div className="space-y-6 animate-in fade-in duration-150">
             {/* Filter Bar */}
             <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-2.5 flex-1 min-w-[280px]">
-                <div className="relative flex-1 min-w-[200px]">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 flex-1 min-w-0">
+                <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
                   <span className="material-symbols-outlined absolute left-3 top-2 text-slate-400 text-[18px]">
                     search
                   </span>
@@ -782,7 +782,7 @@ export default function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={handleExportCSV}
-                className="px-3.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
+                className="w-full sm:w-auto px-3.5 py-2 sm:py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
               >
                 <span className="material-symbols-outlined text-[16px] text-emerald-600">table_view</span>
                 <span>Xuất File CSV</span>
@@ -790,7 +790,20 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="md:hidden space-y-3">
+              {filteredBookings.length === 0 ? (
+                <div className="rounded-xl bg-white border border-slate-200 p-6 text-center text-xs text-slate-400">Không tìm thấy lịch hẹn nào phù hợp bộ lọc.</div>
+              ) : filteredBookings.map((booking) => {
+                const processed = booking.status === "processed";
+                return <article key={booking.id} className="rounded-xl bg-white border border-slate-200 p-4 shadow-xs space-y-3">
+                  <div className="flex items-start justify-between gap-3"><div><p className="font-bold text-slate-900">{booking.name}</p><p className="font-mono text-[11px] text-purple-700 mt-0.5">{booking.phone}</p></div><span className={`shrink-0 px-2 py-1 rounded-full text-[10px] font-bold ${processed ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}>{processed ? "Đã xử lý" : "Chờ tiếp nhận"}</span></div>
+                  <div className="grid grid-cols-2 gap-2 text-xs"><div className="rounded-lg bg-slate-50 p-2"><p className="text-slate-400 text-[10px]">Thời gian</p><p className="font-semibold mt-0.5">{booking.time} · {booking.date}</p></div><div className="rounded-lg bg-slate-50 p-2"><p className="text-slate-400 text-[10px]">Loại sự kiện</p><p className="font-semibold mt-0.5 line-clamp-1">{booking.eventType || "Tư vấn tổng thể"}</p></div></div>
+                  <p className="text-[11px] text-slate-500 line-clamp-2">{booking.notes || "Không có ghi chú"}</p>
+                  {!processed ? <button type="button" onClick={() => handleMarkProcessed(booking.id)} className="w-full py-2 rounded-lg bg-emerald-600 text-white text-xs font-bold">Đánh dấu đã xử lý</button> : <button type="button" onClick={() => setDeleteConfirmId(booking.id)} className="w-full py-2 rounded-lg border border-red-200 bg-red-50 text-red-600 text-xs font-bold">Xóa lịch hẹn</button>}
+                </article>;
+              })}
+            </div>
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
