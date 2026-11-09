@@ -43,6 +43,33 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_RAG_BACKEND_URL || "http://127.0.0.1
 // with a server-side proxy so this value is never exposed to the client.
 const ADMIN_TOKEN = process.env.NEXT_PUBLIC_RAG_ADMIN_TOKEN || "eventviet-local-admin-token";
 
+export class RAGRequestError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string,
+    public readonly existingDocId?: string,
+  ) {
+    super(message);
+    this.name = "RAGRequestError";
+  }
+}
+
+function getErrorDetail(errorData: unknown, fallback: string): { message: string; code?: string; existingDocId?: string } {
+  if (!errorData || typeof errorData !== "object") return { message: fallback };
+  const detail = "detail" in errorData ? errorData.detail : errorData;
+  if (typeof detail === "string") return { message: detail };
+  if (detail && typeof detail === "object") {
+    const value = detail as { message?: unknown; code?: unknown; doc_id?: unknown };
+    return {
+      message: typeof value.message === "string" ? value.message : fallback,
+      code: typeof value.code === "string" ? value.code : undefined,
+      existingDocId: typeof value.doc_id === "string" ? value.doc_id : undefined,
+    };
+  }
+  return { message: fallback };
+}
+
 /**
  * Kiểm tra tình trạng kết nối tới Backend RAG
  */
@@ -68,12 +95,14 @@ export async function checkRAGHealth(): Promise<{ ok: boolean; message?: string 
 export async function uploadDocumentToRAG(
   file: File,
   docType?: string,
-  title?: string
+  title?: string,
+  force = false,
 ): Promise<{ job_id: string; doc_id: string; status: string }> {
   const formData = new FormData();
   formData.append("file", file);
   if (docType) formData.append("doc_type", docType);
   if (title) formData.append("title", title);
+  if (force) formData.append("force", "true");
 
   const res = await fetch(`${BACKEND_URL}/api/kb/documents`, {
     method: "POST",
@@ -85,7 +114,8 @@ export async function uploadDocumentToRAG(
 
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
-    throw new Error(errorData.detail || `Lỗi tải lên tài liệu (${res.status})`);
+    const detail = getErrorDetail(errorData, `Lỗi tải lên tài liệu (${res.status})`);
+    throw new RAGRequestError(detail.message, res.status, detail.code, detail.existingDocId);
   }
 
   return res.json();

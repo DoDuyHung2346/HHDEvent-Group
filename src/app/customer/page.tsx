@@ -1089,7 +1089,13 @@ TỔNG DỰ TOÁN NGÂN SÁCH: ${formatVND(grandTotal)}
           type="button"
           onClick={() => {
             setActiveTab("my_bookings");
-            setBookings(loadBookings().bookings);
+            if (user?.phone) {
+              fetchBookings({ phone: user.phone })
+                .then(setBookings)
+                .catch((error) => console.error("Lỗi tải lịch hẹn Supabase:", error));
+            } else {
+              setBookings([]);
+            }
           }}
           className={`relative flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all cursor-pointer ${
             activeTab === "my_bookings"

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UsersIcon } from "@/components/shared/FormIcons";
 
 interface GuestCountInputProps {
   value: number;

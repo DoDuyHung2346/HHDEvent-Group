@@ -36,7 +36,9 @@ export function setAdminSession(admin: AdminAccount | null): void {
 
 export function authenticateAdmin(email: string, password: string): { success: boolean; error?: string; admin?: AdminAccount } {
   const cleanEmail = email.trim().toLowerCase();
-  if (cleanEmail !== "admin@eventviet.vn" && cleanEmail !== "admin") {
+  // Giữ email cũ để các phiên demo trước vẫn dùng được, đồng thời đồng bộ
+  // với giao diện EventHHD hiện tại.
+  if (cleanEmail !== "admin@eventhhd.vn" && cleanEmail !== "admin@eventviet.vn" && cleanEmail !== "admin") {
     return { success: false, error: "Tài khoản quản trị không tồn tại trong hệ thống." };
   }
 
@@ -46,8 +48,8 @@ export function authenticateAdmin(email: string, password: string): { success: b
 
   const adminAccount: AdminAccount = {
     id: "adm-01",
-    name: "Ban Điều Hành EventViet",
-    email: "admin@eventviet.vn",
+    name: "Ban Điều Hành EventHHD",
+    email: "admin@eventhhd.vn",
     role: "superadmin",
   };
 

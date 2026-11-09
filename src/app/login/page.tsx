@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { recordLoginAttempt } from "@/lib/auth/loginHistory";
 import { getBrowserSupabaseClient } from "@/lib/supabase/browser";
+import { AlertCircleIcon, LockIcon, UserIcon } from "@/components/shared/FormIcons";
 
 function LoginContent() {
   const router = useRouter();
@@ -233,34 +234,40 @@ function LoginContent() {
         {role === "customer" && (
           <form noValidate onSubmit={handleCustomerSubmit} className="space-y-4 text-xs">
             <div className="flex rounded-xl bg-slate-100 p-1 font-bold">
-              <button type="button" onClick={() => setCustomerAuthMode("login")} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "login" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng nhập</button>
-              <button type="button" onClick={() => setCustomerAuthMode("signup")} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "signup" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng ký</button>
+              <button type="button" onClick={() => { setCustomerAuthMode("login"); setCustomerError(""); setCustomerNotice(""); }} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "login" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng nhập</button>
+              <button type="button" onClick={() => { setCustomerAuthMode("signup"); setCustomerError(""); setCustomerNotice(""); }} className={`flex-1 rounded-lg py-2 ${customerAuthMode === "signup" ? "bg-white text-[#5b32e6] shadow-sm" : "text-slate-500"}`}>Đăng ký</button>
             </div>
-            <div>
-              <label className="block font-bold text-slate-700 mb-1.5">
-                Họ và tên Quý khách <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={customerName}
-                onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="Nguyễn Văn A"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-medium"
-              />
-            </div>
+            {customerAuthMode === "signup" && (
+              <>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">
+                    Họ và tên Quý khách <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="Nguyễn Văn A"
+                    autoComplete="name"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-medium"
+                  />
+                </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 mb-1.5">
-                Số điện thoại liên hệ <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="tel"
-                value={customerPhone}
-                onChange={(e) => setCustomerPhone(e.target.value)}
-                placeholder="0912 345 678"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-mono font-medium"
-              />
-            </div>
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1.5">
+                    Số điện thoại liên hệ <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="0912 345 678"
+                    autoComplete="tel"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#5b32e6] transition-all font-mono font-medium"
+                  />
+                </div>
+              </>
+            )}
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
@@ -321,7 +328,7 @@ function LoginContent() {
                 type="email"
                 value={adminEmail}
                 onChange={(e) => setAdminEmail(e.target.value)}
-                placeholder="admin@eventviet.vn"
+                placeholder="admin@eventhhd.vn"
                 className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 transition-all font-mono font-medium"
               />
             </div>

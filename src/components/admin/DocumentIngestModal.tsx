@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import {
   uploadDocumentToRAG,
   getIngestJobStatus,
+  RAGRequestError,
   type IngestJob,
 } from "@/lib/rag/api";
 
@@ -74,6 +75,7 @@ export default function DocumentIngestModal({
   const [logs, setLogs] = useState<Array<{ time: string; text: string; type: "info" | "warn" | "error" | "success" }>>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [canCreateNewVersion, setCanCreateNewVersion] = useState(false);
   const lastProgressRef = useRef<string>("");
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -88,10 +90,11 @@ export default function DocumentIngestModal({
     setLogs((prev) => [...prev, { time, text, type }]);
   };
 
-  const startPipeline = async () => {
+  const startPipeline = async (force = false) => {
     if (!file) return;
     setIsUploading(true);
     setErrorMessage(null);
+    setCanCreateNewVersion(false);
     setLogs([]);
     lastProgressRef.current = "";
     if (file.size === 0) {
@@ -102,7 +105,7 @@ export default function DocumentIngestModal({
     addLog(`Bắt đầu tải lên tệp "${file.name}" (${formatFileSize(file.size)})...`);
 
     try {
-      const uploadRes = await uploadDocumentToRAG(file, docType);
+      const uploadRes = await uploadDocumentToRAG(file, docType, undefined, force);
       addLog(`Tệp đã tải lên thành công. Job ID: #${uploadRes.job_id}. Đang phân phối vào hàng đợi xử lý...`, "info");
 
       setJob({
@@ -173,10 +176,13 @@ export default function DocumentIngestModal({
           console.error("Lỗi polling job:", err);
         }
       }, 600);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setIsUploading(false);
-      setErrorMessage(err.message || "Không thể kết nối Backend RAG");
-      addLog(`Lỗi tải lên: ${err.message}`, "error");
+      const message = err instanceof Error ? err.message : "Không thể kết nối Backend RAG";
+      const canReplace = err instanceof RAGRequestError && err.status === 409;
+      setCanCreateNewVersion(canReplace);
+      setErrorMessage(message);
+      addLog(`Lỗi tải lên: ${message}`, "error");
     }
   };
 
@@ -191,6 +197,7 @@ export default function DocumentIngestModal({
       setJob(null);
       setLogs([]);
       setErrorMessage(null);
+      setCanCreateNewVersion(false);
     }
 
     return () => {
@@ -373,13 +380,23 @@ export default function DocumentIngestModal({
               <div>
                 <p className="font-bold">Lỗi xử lý tài liệu</p>
                 <p className="text-[11px] mt-0.5">{errorMessage}</p>
-                <button
-                  type="button"
-                  onClick={startPipeline}
-                  className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
-                >
-                  Thử lại quy trình
-                </button>
+                {canCreateNewVersion ? (
+                  <button
+                    type="button"
+                    onClick={() => startPipeline(true)}
+                    className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Tải lại thành phiên bản mới
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => startPipeline()}
+                    className="mt-2 px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold transition-all shadow-xs cursor-pointer"
+                  >
+                    Thử lại quy trình
+                  </button>
+                )}
               </div>
             </div>
           )}
