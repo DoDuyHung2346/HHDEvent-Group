@@ -568,6 +568,12 @@ export default function ChatWindow({
     () => [...messages].reverse().find((m) => m.sender === "ai")?.id,
     [messages]
   );
+  // Khi khách đang điền phiếu hẹn mới nhất, nhường toàn bộ chiều cao cho form.
+  // Thanh nhập chat sẽ xuất hiện lại sau khi đặt lịch thành công hoặc có tin AI mới.
+  const isBookingFormFocused = useMemo(() => {
+    const lastAi = [...messages].reverse().find((message) => message.sender === "ai");
+    return lastAi?.type === "booking_form" && !lastAi.isFormSubmitted;
+  }, [messages]);
 
   const handleOptionClick = (action: string, payload?: string) => {
     if (payload === "reschedule_lookup") {
@@ -1115,14 +1121,14 @@ export default function ChatWindow({
               </div>
             ) : (
               /* AI Bubble */
-              <div className="flex items-start gap-2.5 sm:gap-3 max-w-[92%] sm:max-w-[85%] lg:max-w-3xl">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+              <div className={`flex items-start gap-2.5 sm:gap-3 ${msg.type === "booking_form" ? "max-w-full sm:max-w-3xl" : "max-w-[92%] sm:max-w-[85%] lg:max-w-3xl"}`}>
+                <div className={`w-9 h-9 rounded-xl bg-gradient-to-tr from-brand-600 to-purple-500 text-white items-center justify-center shrink-0 shadow-xs mt-0.5 ${msg.type === "booking_form" ? "hidden sm:flex" : "flex"}`}>
                   <svg className="w-5 h-5 text-white fill-none stroke-current stroke-[2]" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z" />
                   </svg>
                 </div>
-                <div className="space-y-3 flex-1 min-w-0">
-                  <div className="p-4 rounded-xl bg-white text-slate-900 border border-purple-100 shadow-xs space-y-2">
+                <div className={`space-y-3 flex-1 min-w-0 ${msg.type === "booking_form" ? "w-full" : ""}`}>
+                  <div className={`text-slate-900 space-y-2 ${msg.type === "booking_form" ? "p-0 bg-transparent border-0 shadow-none" : "p-4 rounded-xl bg-white border border-purple-100 shadow-xs"}`}>
                     <div className="flex items-center justify-between pb-1 border-b border-slate-100 text-[11px] text-slate-500">
                       <span className="font-semibold text-brand-600">EventHHD AI Advisor</span>
                       {msg.source && (
@@ -1284,7 +1290,7 @@ export default function ChatWindow({
       </div>
 
       {/* Chat Input & Command Console */}
-      <div className="p-2 sm:p-3 bg-purple-50/40 border-t border-purple-100 shrink-0 sticky bottom-0 z-10 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
+      {!isBookingFormFocused && <div className="p-2 sm:p-3 bg-purple-50/40 border-t border-purple-100 shrink-0 sticky bottom-0 z-10 pb-[max(0.4rem,env(safe-area-inset-bottom))]">
         <form
           className="space-y-1.5 sm:space-y-2"
           onSubmit={(e) => {
@@ -1393,7 +1399,7 @@ export default function ChatWindow({
             </span>
           </div>
         </form>
-      </div>
+      </div>}
     </section>
   );
 }

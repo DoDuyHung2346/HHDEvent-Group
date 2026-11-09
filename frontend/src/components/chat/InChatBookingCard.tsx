@@ -47,6 +47,7 @@ export default function InChatBookingCard({
 
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [selectedSlot, setSelectedSlot] = useState<string>("09:00");
+  const [timePeriod, setTimePeriod] = useState<"morning" | "afternoon">("morning");
   const [name, setName] = useState(user?.name || "");
   const [phone, setPhone] = useState(user?.phone || "");
   const [eventType, setEventType] = useState(
@@ -104,6 +105,9 @@ export default function InChatBookingCard({
       (b) => b.date === date && b.time.startsWith(time) && b.status === "pending"
     ).length;
   };
+  const visibleSlots = allSlots.filter((slot) =>
+    timePeriod === "morning" ? Number(slot.time.slice(0, 2)) < 12 : Number(slot.time.slice(0, 2)) >= 12
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,7 +184,7 @@ export default function InChatBookingCard({
   };
 
   return (
-    <div className="p-4 sm:p-5 rounded-2xl bg-white border border-indigo-200/90 shadow-md space-y-4 my-2 text-slate-900 max-w-2xl animate-in fade-in duration-200">
+    <div className="w-full p-3 sm:p-5 rounded-2xl bg-white border border-indigo-200/90 shadow-md space-y-4 my-2 text-slate-900 max-w-2xl animate-in fade-in duration-200">
       {/* Card Header */}
       <div className="flex items-center justify-between pb-3.5 bg-gradient-to-r from-indigo-50/80 to-slate-50 -mx-4 sm:-mx-5 -mt-4 sm:-mt-5 px-4 sm:px-5 pt-4 rounded-t-2xl border-b border-indigo-100">
         <div>
@@ -188,7 +192,7 @@ export default function InChatBookingCard({
             <SparklesIcon size={11} className="text-[#a44200]" />
             <span>EventHHD Concierge</span>
           </span>
-          <h3 className="text-sm sm:text-base text-slate-900 font-bold mt-1">
+          <h3 className="text-base sm:text-lg text-slate-900 font-bold mt-1 leading-snug">
             Phiếu Đặt Lịch Tư Vấn Trực Tiếp 1-1
           </h3>
           <p className="text-[11px] text-slate-500 hidden sm:block">
@@ -225,11 +229,21 @@ export default function InChatBookingCard({
 
         {/* Date Selector */}
         <div>
-          <label className="block font-semibold text-slate-800 mb-1.5 flex items-center justify-between">
-            <span>1. Chọn ngày tư vấn (từ ngày mai)</span>
+          <label className="block font-semibold text-slate-800 mb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5">
+            <span>1. Chọn ngày tư vấn</span>
             <span className="text-[11px] text-indigo-600 font-normal">Tối đa {MAX_BOOKINGS_PER_SLOT} lịch / khung giờ</span>
           </label>
-          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-none py-1 touch-pan-x -webkit-overflow-scrolling-touch">
+          <div className="sm:hidden">
+            <label className="block text-[11px] text-slate-500 mb-1.5">Chọn ngày bất kỳ trong tương lai</label>
+            <input
+              type="date"
+              min={availableDays[0]}
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              className="w-full h-12 rounded-xl border border-slate-300 bg-white px-3 text-base text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+            />
+          </div>
+          <div className="hidden sm:flex gap-2 overflow-x-auto pb-1.5 scrollbar-none py-1 touch-pan-x -webkit-overflow-scrolling-touch">
             {availableDays.length === 0 ? (
               <div className="text-center py-2 text-slate-400 text-xs">Đang tải lịch...</div>
             ) : (
@@ -254,7 +268,7 @@ export default function InChatBookingCard({
               })
             )}
           </div>
-          <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-600">
+          <div className="hidden sm:flex mt-2 items-center gap-2 text-[11px] text-slate-600">
             <span className="shrink-0">Hoặc chọn ngày khác:</span>
             <input
               type="date"
@@ -268,12 +282,16 @@ export default function InChatBookingCard({
 
         {/* Time Slot Selector */}
         <div>
-          <label className="font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5">
+          <label className="font-semibold text-slate-800 mb-2 flex items-center gap-1.5">
             <ClockIcon size={14} className="text-indigo-600 shrink-0" />
             <span>2. Khung giờ thuận tiện *</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5 max-h-44 sm:max-h-40 overflow-y-auto p-1.5 bg-slate-50/80 rounded-xl border border-slate-200">
-            {allSlots.map((s) => {
+          <div className="grid grid-cols-2 gap-2 mb-2 rounded-xl bg-slate-100 p-1">
+            <button type="button" onClick={() => { setTimePeriod("morning"); setSelectedSlot(""); }} className={`min-h-10 rounded-lg text-xs font-bold ${timePeriod === "morning" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500"}`}>Buổi sáng · 08:00–11:30</button>
+            <button type="button" onClick={() => { setTimePeriod("afternoon"); setSelectedSlot(""); }} className={`min-h-10 rounded-lg text-xs font-bold ${timePeriod === "afternoon" ? "bg-white text-indigo-700 shadow-sm" : "text-slate-500"}`}>Buổi chiều · 12:00–16:30</button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-56 sm:max-h-40 overflow-y-auto p-1.5 bg-slate-50/80 rounded-xl border border-slate-200">
+            {visibleSlots.map((s) => {
               const count = getSlotCount(selectedDate, s.time);
               const isFull = count >= MAX_BOOKINGS_PER_SLOT;
               const isSelected = selectedSlot === s.time;
@@ -383,11 +401,11 @@ export default function InChatBookingCard({
           </div>
         )}
 
-        <div className="pt-2 border-t border-slate-100">
+        <div className="pt-2 border-t border-slate-100 sticky bottom-0 bg-white/95 backdrop-blur pb-1">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full sm:w-auto sm:ml-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[48px] text-sm"
+            className="w-full sm:w-auto sm:ml-auto px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-md shadow-indigo-600/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[52px] text-sm"
           >
             {isSubmitting ? (
               <>
