@@ -25,6 +25,7 @@ import StaffManagement from "@/components/admin/StaffManagement";
 import LoginHistoryModal from "@/components/admin/LoginHistoryModal";
 import DocumentIngestModal from "@/components/admin/DocumentIngestModal";
 import DocumentChunksModal from "@/components/admin/DocumentChunksModal";
+import ConversationInbox from "@/components/admin/ConversationInbox";
 import {
   checkRAGHealth,
   listRAGDocuments,
@@ -69,8 +70,8 @@ export default function AdminDashboardPage() {
   const router = useRouter();
   const { admin, isAdminLoggedIn, logoutAdminAccount, isLoaded } = useAuth();
 
-  // Tab State: analytics | crm | documents | pricing | faq | company_info | ai_test
-  const [activeTab, setActiveTab] = useState<"analytics" | "crm" | "staff" | "documents" | "pricing" | "faq" | "company_info" | "ai_test">("analytics");
+  // Tab State: analytics | crm | conversations | documents | pricing | faq | company_info | ai_test
+  const [activeTab, setActiveTab] = useState<"analytics" | "crm" | "conversations" | "staff" | "documents" | "pricing" | "faq" | "company_info" | "ai_test">("analytics");
 
   // CRM Bookings State
   const [bookingsList, setBookingsList] = useState<Booking[]>([]);
@@ -469,6 +470,19 @@ export default function AdminDashboardPage() {
               <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/20 font-mono">
                 {bookingsList.length}
               </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab("conversations")}
+              className={`px-3.5 py-2 text-xs font-bold rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === "conversations"
+                  ? "bg-purple-700 text-white shadow-xs"
+                  : "text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <span className="material-symbols-outlined text-[17px]">forum</span>
+              <span>Hội Thoại Khách Hàng</span>
             </button>
 
             <button
@@ -882,6 +896,8 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         )}
+
+        {activeTab === "conversations" && <ConversationInbox />}
 
         {/* ── PHÂN HỆ 3: TÀI LIỆU & UPLOAD THÔNG TIN ───────────────────────── */}
                 {activeTab === "documents" && (

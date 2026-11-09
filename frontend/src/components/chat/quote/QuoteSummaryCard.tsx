@@ -50,7 +50,9 @@ export function QuoteSummaryCard({
               <span className="font-bold text-slate-800">{line.optionLabel}</span>
             </div>
             <span className="font-extrabold text-[#3525cd]">
-              {line.amount === 0 ? "0đ" : formatVnd(line.amount)}
+              {(line.maxAmount ?? line.amount) === 0
+                ? "Chưa tính"
+                : `${formatVnd(line.minAmount ?? line.amount)} – ${formatVnd(line.maxAmount ?? line.amount)}`}
             </span>
           </div>
         ))}
@@ -68,17 +70,17 @@ export function QuoteSummaryCard({
         <div className="flex items-baseline justify-between">
           <span className="text-xs font-bold text-slate-700">Tổng tạm tính:</span>
           <span className="text-base sm:text-lg font-black text-[#3525cd]">
-            {formatVnd(quote.subtotal)}
+            {formatVnd(quote.min)} – {formatVnd(quote.max)}
           </span>
         </div>
         <div className="flex items-center justify-between text-[11px] text-slate-500">
-          <span>Biên độ ước lượng (±15%):</span>
+          <span>Khoảng giá theo hạng mục:</span>
           <span className="font-semibold text-slate-700">
             {formatVnd(quote.min)} – {formatVnd(quote.max)}
           </span>
         </div>
         <p className="text-[10px] text-slate-400 italic pt-1">
-          *Giá tham khảo chưa bao gồm VAT 8% và địa điểm tổ chức (nếu thuê ngoài). Báo giá chính xác sau khi khảo sát thực địa.
+          *Khoảng giá tham khảo từ kho dữ liệu RAG, chưa gồm VAT và venue. Báo giá chính xác sau khi khảo sát thực tế.
         </p>
       </div>
 

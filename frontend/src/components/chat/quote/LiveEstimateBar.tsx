@@ -17,14 +17,11 @@ export function LiveEstimateBar({ quote, onConfirm, disabled = false }: LiveEsti
         <div className="flex items-baseline gap-1.5 flex-wrap">
           <span className="text-xs text-slate-500 font-medium">Tạm tính:</span>
           <span className="text-base sm:text-lg font-black text-[#3525cd]">
-            {formatVnd(quote.subtotal)}
-          </span>
-          <span className="text-[11px] text-slate-500 font-medium">
-            ({formatVnd(quote.min)} – {formatVnd(quote.max)})
+            {formatVnd(quote.min)} – {formatVnd(quote.max)}
           </span>
         </div>
         <p className="text-[10px] text-slate-400 mt-0.5">
-          *Ước tính ±15% chưa gồm VAT. Báo giá chính xác khi tư vấn 1-1.
+          *Khoảng giá cộng từ định mức RAG; chưa gồm VAT, venue và hạng mục cần khảo sát.
         </p>
       </div>
 

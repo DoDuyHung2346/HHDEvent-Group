@@ -35,6 +35,8 @@ export const QuoteSnapshotSchema = z.object({
       categoryLabel: z.string(),
       optionLabel: z.string(),
       amount: z.number(),
+      minAmount: z.number().optional(),
+      maxAmount: z.number().optional(),
     })
   ),
   subtotal: z.number(),

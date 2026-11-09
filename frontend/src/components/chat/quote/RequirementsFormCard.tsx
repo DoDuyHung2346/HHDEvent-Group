@@ -28,9 +28,9 @@ export function RequirementsFormCard({
   const [selections, setSelections] = useState<Record<string, string | string[]>>(() => {
     const defaultSel: Record<string, string | string[]> = { ...initialSelections };
     // Default selection cho required fields nếu chưa có
-    if (!defaultSel.concept) defaultSel.concept = "concept-modern";
-    if (!defaultSel.decoration) defaultSel.decoration = "deco-mid";
-    if (!defaultSel.av) defaultSel.av = "av-basic";
+    if (!defaultSel.concept) defaultSel.concept = "concept-2d";
+    if (!defaultSel.decoration) defaultSel.decoration = "deco-hiflex";
+    if (!defaultSel.av) defaultSel.av = "av-standard";
     return defaultSel;
   });
   const [note, setNote] = useState<string>(initialNote);
@@ -97,7 +97,7 @@ export function RequirementsFormCard({
               <span className="text-[#3525cd]">Phiếu Chọn Yêu Cầu Sự Kiện</span>
             </h3>
             <p className="text-[11px] text-slate-500">
-              Chọn concept, mức trang trí & thiết bị để xem bảng giá dự toán tức thời
+              Chọn hạng mục để xem khoảng giá từ bảng giá RAG đã duyệt
             </p>
           </div>
         </div>

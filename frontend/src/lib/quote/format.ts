@@ -30,14 +30,16 @@ export function formatVnd(amount: number): string {
  * 10_000_000 fixed -> "10 triệu"
  */
 export function formatPrice(option: QuoteOption): string {
-  if (option.price === 0) {
+  if (option.maxPrice === 0) {
     if (option.id.includes("custom") || option.id.includes("none")) {
       return option.id.includes("none") ? "Miễn phí" : "Tư vấn sau";
     }
     return "Miễn phí";
   }
 
-  const formatted = formatVnd(option.price);
+  const formatted = option.minPrice === option.maxPrice
+    ? formatVnd(option.minPrice)
+    : `${formatVnd(option.minPrice)}–${formatVnd(option.maxPrice)}`;
   if (option.unit === "per_guest") {
     return `${formatted} / khách`;
   }

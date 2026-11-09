@@ -1,9 +1,9 @@
 import type { ChatResponse } from "@/lib/schemas";
 
-// Giá tham khảo trong bảng giá hạ tầng sân khấu, áp dụng theo m².
-const STAGE_FLOOR_MIN = 120_000;
-const STAGE_FLOOR_MAX = 150_000;
-const STAGE_CARPET_PER_M2 = 30_000;
+// Bảng giá RAG Standard: sân khấu di động đã gồm bọc thảm đỏ/ghi/xanh.
+// Không cộng riêng thảm đỏ khi phủ cùng diện tích sân khấu để tránh tính trùng.
+const STAGE_WITH_CARPET_MIN = 150_000;
+const STAGE_WITH_CARPET_MAX = 220_000;
 
 type ChatTurn = { role: "user" | "assistant"; content: string };
 
@@ -30,9 +30,7 @@ export function getStageEstimate(message: string, history: ChatTurn[] = []): Cha
   // catalog. Không để nó rơi sang luồng báo giá sự kiện theo số khách.
   if (!stageArea && !carpetArea) {
     const lines = ["Đơn giá hạ tầng tham khảo theo bảng giá:"];
-    if (hasStage) lines.push(`- Mặt sàn sân khấu: ${format(STAGE_FLOOR_MIN)} – ${format(STAGE_FLOOR_MAX)}/m².`);
-    if (hasCarpet) lines.push(`- Thảm đỏ: ${format(STAGE_CARPET_PER_M2)}/m².`);
-    if (hasStage && hasCarpet) lines.push(`- Nếu thảm đỏ phủ toàn bộ mặt sàn, tổng phần sàn và thảm là ${format(STAGE_FLOOR_MIN + STAGE_CARPET_PER_M2)} – ${format(STAGE_FLOOR_MAX + STAGE_CARPET_PER_M2)}/m².`);
+    if (hasStage || hasCarpet) lines.push(`- Sân khấu di động bọc thảm đỏ/ghi/xanh: ${format(STAGE_WITH_CARPET_MIN)} – ${format(STAGE_WITH_CARPET_MAX)}/m².`);
 
     return {
       answer: `${lines.join("\n")}\n\nAnh/chị cho em biết diện tích sân khấu và diện tích thảm đỏ cần phủ (m²); em sẽ tính ngay tổng chi phí tham khảo.`,
@@ -55,13 +53,13 @@ export function getStageEstimate(message: string, history: ChatTurn[] = []): Cha
   if (!carpetM2) return null;
 
   if ((stageArea && (!Number.isFinite(stageArea) || stageArea <= 0 || stageArea > 2_000)) || !Number.isFinite(carpetM2) || carpetM2 <= 0 || carpetM2 > 2_000) return null;
-  const floorMin = (stageArea ?? 0) * STAGE_FLOOR_MIN;
-  const floorMax = (stageArea ?? 0) * STAGE_FLOOR_MAX;
-  const carpet = carpetM2 * STAGE_CARPET_PER_M2;
-  const stageLine = stageArea ? `- Mặt sàn sân khấu ${stageArea} m²: ${format(floorMin)} – ${format(floorMax)} (${format(STAGE_FLOOR_MIN)} – ${format(STAGE_FLOOR_MAX)}/m²).\n` : "";
+  const billedArea = stageArea ?? carpetM2;
+  const floorMin = billedArea * STAGE_WITH_CARPET_MIN;
+  const floorMax = billedArea * STAGE_WITH_CARPET_MAX;
+  const stageLine = `- Sân khấu ${billedArea} m² bọc thảm đỏ: ${format(floorMin)} – ${format(floorMax)} (${format(STAGE_WITH_CARPET_MIN)} – ${format(STAGE_WITH_CARPET_MAX)}/m²).\n`;
 
   return {
-    answer: `Chi phí hạ tầng tham khảo:\n${stageLine}- Thảm đỏ ${carpetM2} m²: ${format(carpet)} (${format(STAGE_CARPET_PER_M2)}/m²).\n\nTổng phần sàn và thảm: ${format(floorMin + carpet)} – ${format(floorMax + carpet)}. Mức này chưa bao gồm âm thanh, ánh sáng, LED, nhân công và vận chuyển; các hạng mục đó phụ thuộc thiết kế thực tế.`,
+    answer: `Chi phí hạ tầng tham khảo:\n${stageLine}\nTổng phần sân khấu đã bọc thảm: ${format(floorMin)} – ${format(floorMax)}. Bảng giá hiện hành đã gồm bọc thảm, nên em không cộng thêm thảm đỏ lần nữa. Mức này chưa bao gồm âm thanh, ánh sáng, LED, nhân công và vận chuyển; các hạng mục đó phụ thuộc thiết kế thực tế.`,
     options: [
       { id: "stage-av", label: "Tư vấn âm thanh, ánh sáng", action: "ask", payload: `Báo giá âm thanh ánh sáng cho sân khấu ${stageArea ?? carpetM2}m2` },
       { id: "stage-quote", label: "Lập báo giá đầy đủ", action: "open_requirements", payload: `Sân khấu ${stageArea ?? carpetM2}m2` },

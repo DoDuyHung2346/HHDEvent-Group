@@ -2,13 +2,12 @@ import type { ChatResponse } from "@/lib/schemas";
 
 type ChatTurn = { role: "user" | "assistant"; content: string };
 
-// Các mức này được tính từ catalog cấu hình hiện có: concept, trang trí,
-// âm thanh/ánh sáng, F&B và một số hạng mục bổ sung. Đây không phải báo giá
-// hợp đồng và cố ý không đưa vào các chi phí chưa biết như venue, vận chuyển.
+// Gói tham chiếu có trong Bo_Du_Lieu_Gia_Va_FAQ_Su_Kien_Chatbot_AI_RAG_Standard.
+// Đây là giá gói, không phải đơn giá/khách; venue và yêu cầu riêng được chốt sau.
 const TIERS = [
-  { label: "Tối giản", fixed: 16_000_000, perGuest: 450_000 },
-  { label: "Tiêu chuẩn", fixed: 52_000_000, perGuest: 850_000 },
-  { label: "Nâng cao", fixed: 136_000_000, perGuest: 850_000 },
+  { label: "Silver cơ bản", fixed: 25_000_000 },
+  { label: "Gold nâng cao", fixed: 55_000_000 },
+  { label: "Diamond", fixed: 110_000_000 },
 ] as const;
 
 function getGuestCount(text: string): number | null {
@@ -92,13 +91,13 @@ export function getPreliminaryEventEstimate(message: string, history: ChatTurn[]
 
   if (!guestCount) return null;
 
-  const estimates = TIERS.map((tier) => ({ ...tier, total: tier.fixed + tier.perGuest * guestCount }));
+  const estimates = TIERS.map((tier) => ({ ...tier, total: tier.fixed }));
   const budgetNote = budget
-    ? `\n\nNgân sách bạn nêu là ${formatVnd(budget)} (${formatVnd(Math.round(budget / guestCount))}/khách). ${budget >= estimates[0].total && budget <= estimates[2].total ? "Mức này có thể cân đối được, nhưng cần chốt hạng mục ưu tiên với chuyên viên." : budget < estimates[0].total ? "Mức này đang thấp hơn phương án tối giản trong catalog; chuyên viên cần tối ưu lại phạm vi dịch vụ." : "Mức này cao hơn phương án nâng cao trong catalog; chuyên viên có thể tư vấn thêm hạng mục hoặc venue phù hợp."}`
+    ? `\n\nNgân sách bạn nêu là ${formatVnd(budget)} (${formatVnd(Math.round(budget / guestCount))}/khách). ${budget >= estimates[0].total && budget <= estimates[2].total ? "Mức này có thể cân đối được theo gói tham khảo, nhưng cần chốt hạng mục ưu tiên với chuyên viên." : budget < estimates[0].total ? "Mức này đang thấp hơn gói Silver tham khảo; chuyên viên cần tối ưu lại phạm vi dịch vụ." : "Mức này cao hơn gói Diamond tham khảo; chuyên viên có thể tư vấn thêm hạng mục hoặc venue phù hợp."}`
     : "";
 
   return {
-    answer: `Dựa trên quy mô ${guestCount} khách cho ${eventLabel}, em có thể đưa ra dự toán sơ bộ theo catalog cấu hình hiện tại:\n- ${estimates[0].label}: khoảng ${formatVnd(estimates[0].total)}.\n- ${estimates[1].label}: khoảng ${formatVnd(estimates[1].total)}.\n- ${estimates[2].label}: khoảng ${formatVnd(estimates[2].total)}.${budgetNote}\n\nĐây là mức tham khảo cho các hạng mục trong catalog, chưa phải báo giá chốt và chưa bao gồm các chi phí phụ thuộc địa điểm/thời điểm như thuê venue, vận chuyển hoặc yêu cầu kỹ thuật riêng. Em đã mở phiếu đặt lịch bên dưới để chuyên viên xác nhận phương án và báo giá chính xác.`,
+    answer: `Dựa trên quy mô ${guestCount} khách cho ${eventLabel}, em có thể đưa ra 3 gói tham khảo từ bảng giá RAG:\n- ${estimates[0].label}: từ ${formatVnd(estimates[0].total)}.\n- ${estimates[1].label}: từ ${formatVnd(estimates[1].total)}.\n- ${estimates[2].label}: từ ${formatVnd(estimates[2].total)}.${budgetNote}\n\nĐây là giá gói tham khảo, chưa phải báo giá chốt và chưa bao gồm venue, vận chuyển hoặc yêu cầu kỹ thuật riêng. Em đã mở phiếu đặt lịch bên dưới để chuyên viên xác nhận phương án và báo giá chính xác.`,
     options: [
       { id: "preliminary-booking", label: "Đặt lịch chốt báo giá", action: "open_booking", payload: `Tư vấn dự toán ${eventLabel} ${guestCount} khách` },
       { id: "preliminary-requirements", label: "Tự chọn hạng mục & xem giá", action: "open_requirements", payload: `${guestCount} khách` },
