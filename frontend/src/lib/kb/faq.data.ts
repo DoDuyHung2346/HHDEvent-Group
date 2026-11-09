@@ -165,20 +165,42 @@ export const faqs: FAQ[] = [
     id: "faq-10",
     question: "EventHHD phục vụ khu vực nào?",
     answer:
-      "EventHHD phục vụ chủ yếu tại TP. Hồ Chí Minh và các tỉnh lân cận (Bình Dương, Đồng Nai, Vũng Tàu, Tiền Giang). Ngoài ra, chúng tôi cũng nhận tổ chức sự kiện tại Hà Nội, Đà Nẵng và các tỉnh thành khác với phí di chuyển & logistics được tính thêm theo thực tế. Liên hệ để được tư vấn cụ thể theo địa điểm mong muốn.",
+      "EventHHD phục vụ chủ yếu tại TP. Hà Nội và các tỉnh lân cận (Bắc Ninh, Hưng Yên, Phú Thọ, Ninh Bình,...). Ngoài ra, chúng tôi cũng nhận tổ chức sự kiện tại TP. Hồ Chí Minh, Đà Nẵng và các tỉnh thành khác với phí di chuyển & logistics được tính thêm theo thực tế. Liên hệ để được tư vấn cụ thể theo địa điểm mong muốn.",
     tags: [
       "khu vực",
       "tỉnh thành",
-      "TP HCM",
       "Hà Nội",
-      "Đà Nẵng",
+      "TP HCM",
+      "Bắc Ninh",
       "phục vụ",
       "địa bàn",
     ],
     followups: [
-      "Phí di chuyển ngoài TP HCM được tính như thế nào?",
-      "EventHHD có tổ chức sự kiện tại Hà Nội không?",
+      "Phí di chuyển ngoài Hà Nội được tính như thế nào?",
+      "EventHHD có tổ chức sự kiện tại TP Hồ Chí Minh không?",
       "Làm sao để đặt lịch tư vấn?",
+    ],
+  },
+  {
+    id: "faq-11",
+    question: "Chi phí sân khấu và thảm đỏ được tính thế nào?",
+    answer:
+      "Đơn giá hạ tầng tham khảo: mặt sàn sân khấu 120.000–150.000 VNĐ/m²; thảm đỏ 30.000 VNĐ/m². Nếu thảm đỏ phủ toàn bộ mặt sàn, tổng phần sàn và thảm là 150.000–180.000 VNĐ/m². Ví dụ sân khấu 100 m² và thảm đỏ 50 m²: sàn sân khấu 12.000.000–15.000.000 VNĐ, thảm đỏ 1.500.000 VNĐ, tổng 13.500.000–16.500.000 VNĐ. Mức này chưa bao gồm âm thanh, ánh sáng, LED, nhân công và vận chuyển.",
+    tags: [
+      "sân khấu",
+      "thảm đỏ",
+      "m2",
+      "m²",
+      "đơn giá",
+      "hạ tầng",
+      "120000",
+      "150000",
+      "30000",
+    ],
+    followups: [
+      "Sân khấu 50m², thảm đỏ 50m² giá bao nhiêu?",
+      "Sân khấu 100m², thảm đỏ 50m² giá bao nhiêu?",
+      "Chi phí màn hình LED cho sân khấu được tính thế nào?",
     ],
   },
 ];

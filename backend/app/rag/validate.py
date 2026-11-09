@@ -92,29 +92,9 @@ def validate_response(
     # Bổ sung các mốc giờ làm việc tiêu chuẩn (8h, 12h, 13h, 18h, 24/7)
     ctx_numbers.update({0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 24.0})
 
-    # Bổ sung số điện thoại và mã nhân viên từ staff_context
+    # Chỉ hotline công ty được phép xuất hiện; số cá nhân của nhân viên không
+    # bao giờ được cấp quyền hiển thị trong câu trả lời khách hàng.
     allowed_phones = set(company_info.get("allowed_phones", []))
-    if staff_context:
-        for s in staff_context:
-            sd = s.dict() if hasattr(s, "dict") else (dict(s) if isinstance(s, dict) else vars(s))
-            phone = sd.get("phone")
-            if phone:
-                allowed_phones.add(phone)
-                clean_digits = re.sub(r"\D", "", phone)
-                if clean_digits:
-                    try:
-                        ctx_numbers.add(float(clean_digits))
-                        # Cũng thêm dạng bỏ số 0 đầu (e.g. 912345678.0)
-                        if clean_digits.startswith("0"):
-                            ctx_numbers.add(float(clean_digits[1:]))
-                    except ValueError:
-                        pass
-            staff_id = sd.get("id", "")
-            for d in re.findall(r"\d+", staff_id):
-                try:
-                    ctx_numbers.add(float(d))
-                except ValueError:
-                    pass
 
     ans_numbers = normalize_numbers(llm_out.answer)
 

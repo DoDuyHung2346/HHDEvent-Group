@@ -11,11 +11,36 @@ import { getPreliminaryEventEstimate } from "@/lib/quote/preliminaryEstimate";
 import { isContactRequest, isEventRelatedQuestion, isExplicitlyOutsideEventDomain, isGeneralEventCostQuestion, isGreeting, isSchedulingRequest, needsSpecialistConsultation } from "@/lib/ai/domain";
 
 const RAG_BACKEND_URL = process.env.RAG_BACKEND_URL || "http://127.0.0.1:8000";
+const PERSONAL_VN_PHONE_PATTERN = /(?:\+84|0)(?:3|5|7|8|9)\d{8}\b/;
 
 // Nguồn vẫn được giữ trong metadata cho quản trị/RAG, nhưng khách hàng không
 // cần thấy ký hiệu kỹ thuật như [1], [2] chen vào nội dung tư vấn.
 function removeInlineCitations(answer: string): string {
   return answer.replace(/\s*\[(?:\d+\s*(?:,\s*\d+\s*)*)\]/g, "");
+}
+
+// Số trực tiếp của nhân viên có thể xuất hiện trong DOCX cũ. Không trả về
+// cho khách: mọi nhu cầu gặp chuyên viên phải đi qua phiếu đặt lịch để hệ
+// thống điều phối, lưu yêu cầu và bảo vệ thông tin cá nhân.
+function getPrivateContactBookingResponse() {
+  return {
+    answer: "Để bảo vệ thông tin liên hệ cá nhân của chuyên viên, EventHHD sẽ không hiển thị số điện thoại trực tiếp. Em đã mở phiếu đặt lịch bên dưới để đội ngũ điều phối liên hệ và tư vấn đúng nhu cầu của anh/chị.",
+    options: [
+      { id: "private-contact-booking", label: "Đặt lịch với chuyên viên", action: "open_booking" as const, payload: "" },
+      { id: "private-contact-services", label: "Xem hạng mục dịch vụ", action: "open_requirements" as const, payload: "" },
+    ],
+    related_questions: [
+      "Tôi muốn đặt lịch tư vấn 1-1.",
+      "Tôi cần chuẩn bị gì trước buổi tư vấn?",
+      "Quy trình làm việc với EventHHD như thế nào?",
+    ],
+    needs_booking: true,
+    needs_requirements: false,
+    matched_faq_ids: ["private-staff-contact-booking"],
+    source: "ai" as const,
+    show_booking_form: true,
+    intent: "normal" as const,
+  };
 }
 
 // Detect intent từ message
@@ -73,7 +98,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: firstError }, { status: 400 });
   }
 
-  const { message, history, customerContext, staffContext } = parseResult.data;
+  const { message, history, customerContext } = parseResult.data;
   // FastAPI requires a session id for tracing/history. The original payload
   // omitted it, causing every backend RAG call to return 422 and silently
   // fall back to the static FAQ path.
@@ -98,12 +123,6 @@ export async function POST(req: NextRequest) {
   const stageEstimate = getStageEstimate(message, history);
   if (stageEstimate) return NextResponse.json({ ...stageEstimate, intent: "normal" as const });
 
-  // Câu hỏi giá chung cần được hướng dẫn thu thập thông tin, không phải bị RAG
-  // fallback rồi đẩy ngay sang form đặt lịch.
-  if (isGeneralEventCostQuestion(message)) {
-    return NextResponse.json({ ...getGeneralPricingResponse(), intent: "normal" as const });
-  }
-
   // Chỉ những yêu cầu liên quan tổ chức sự kiện mới được đi tới luồng tư vấn.
   if (isExplicitlyOutsideEventDomain(message) || !isEventRelatedQuestion(message, history)) {
     return NextResponse.json({ ...getUnrelatedResponse(), intent: "out_of_scope" as const });
@@ -119,6 +138,13 @@ export async function POST(req: NextRequest) {
       show_booking_form: true,
       intent: "normal" as const,
     });
+  }
+
+  // Chỉ câu hỏi chi phí chung, chưa có dữ kiện đủ để dựng phương án, mới cần
+  // hỏi thêm thông tin. Phải chạy SAU preliminaryEstimate: một yêu cầu đã nêu
+  // rõ loại sự kiện và ngân sách là lead đủ điều kiện để mở phiếu đặt lịch.
+  if (isGeneralEventCostQuestion(message)) {
+    return NextResponse.json({ ...getGeneralPricingResponse(), intent: "normal" as const });
   }
 
   // Nếu là đổi lịch → trả special response
@@ -207,7 +233,6 @@ export async function POST(req: NextRequest) {
         session_id: sessionId,
         message,
         history: history || [],
-        staff_context: staffContext || undefined,
       }),
       // Gemini + local embedding có thể cần hơn 5 giây, nhất là ngay sau khi
       // container khởi động. Timeout cũ khiến frontend tự rơi về câu handoff
@@ -230,11 +255,40 @@ export async function POST(req: NextRequest) {
           : "")
       );
 
+      // Không phụ thuộc vào prompt: đây là hàng rào cuối cùng đối với cả tài
+      // liệu RAG cũ lẫn một câu trả lời LLM bất thường có số cá nhân.
+      if (PERSONAL_VN_PHONE_PATTERN.test(answer)) {
+        return NextResponse.json(getPrivateContactBookingResponse());
+      }
+
       // Không có chunk khớp không đồng nghĩa câu hỏi ngoài phạm vi. Chỉ những
       // yêu cầu cần khảo sát/đặc tả mới được mời đặt lịch ngay.
       if (isOutOfScope) {
         return NextResponse.json({ ...getUnrelatedResponse(), intent: "out_of_scope" as const });
       }
+
+      // Backend RAG đã xác định cần chuyên viên (needs_human hoặc fallback)
+      // và trả action=open_booking. Trước đây action này bị bỏ qua ở Next.js
+      // nên chatbot nói "điều phối qua phiếu" nhưng giao diện không hề mở
+      // phiếu. Giữ phần tư vấn và mở form ngay bên dưới câu trả lời.
+      if (ragData.action?.type === "open_booking") {
+        const followUps = refineSuggestions(ragData.follow_ups, { message, history });
+        return NextResponse.json({
+          answer,
+          options: [
+            { id: "rag-booking", label: "Đặt lịch với chuyên viên", action: "open_booking" as const, payload: message },
+            { id: "rag-requirements", label: "Tự chọn hạng mục & xem giá", action: "open_requirements" as const, payload: "" },
+          ],
+          related_questions: followUps,
+          needs_booking: true,
+          needs_requirements: false,
+          show_booking_form: true,
+          matched_faq_ids: ragData.citations ? ragData.citations.map((c: { chunk_id: string }) => c.chunk_id) : [],
+          source: "ai" as const,
+          intent: "normal" as const,
+        });
+      }
+
       if (hasKnowledgeGap) {
         // RAG vector có thể bỏ sót một số câu FAQ ngắn do cách diễn đạt.
         // Trước khi nói "thiếu dữ liệu", tra lại kho FAQ chuẩn đã được kiểm

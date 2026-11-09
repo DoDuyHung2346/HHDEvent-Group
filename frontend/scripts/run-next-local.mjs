@@ -1,4 +1,5 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, unlinkSync } from "node:fs";
+import net from "node:net";
 import { dirname, resolve } from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -6,6 +7,33 @@ import { fileURLToPath } from "node:url";
 const scriptDir = dirname(fileURLToPath(import.meta.url));
 const frontendDir = resolve(scriptDir, "..");
 const envPath = resolve(frontendDir, "..", ".env");
+const nextDevLock = resolve(frontendDir, ".next", "dev", "lock");
+
+function isPortOpen(port) {
+  return new Promise((resolve) => {
+    const socket = net.createConnection({ host: "127.0.0.1", port });
+    const finish = (open) => {
+      socket.destroy();
+      resolve(open);
+    };
+    socket.setTimeout(400);
+    socket.once("connect", () => finish(true));
+    socket.once("timeout", () => finish(false));
+    socket.once("error", () => finish(false));
+  });
+}
+
+// Windows can leave this lock behind after a terminal/process is closed. Only
+// remove it when the default Next port is no longer serving, never while a
+// live local server is detected.
+if (existsSync(nextDevLock) && !(await isPortOpen(3000))) {
+  try {
+    unlinkSync(nextDevLock);
+    console.log("Đã dọn file khóa Next.js cũ.");
+  } catch {
+    // Next will show its native diagnostic if another process still owns it.
+  }
+}
 
 // Next.js starts from frontend/, while the project's private config lives in
 // the repository root. Load only missing values so shell-provided values can

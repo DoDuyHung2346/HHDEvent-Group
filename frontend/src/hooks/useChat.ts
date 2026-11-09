@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import type { ChatResponse, CustomerContext } from "@/lib/schemas";
-import { loadStaffList } from "@/lib/staff/storage";
 
 export interface Message {
   id: string;
@@ -43,26 +42,6 @@ export function useChat(customerContext?: CustomerContext | null) {
       { role: "user" as const, content: text },
     ].slice(-12);
 
-    // Lấy staff list từ localStorage để gửi kèm (đảm bảo LLM không bịa tên nhân viên)
-    let staffContext: Array<{
-      id: string; name: string; phone: string; roleLabel: string; shift: string; status: string;
-    }> | undefined;
-    try {
-      const staffList = loadStaffList();
-      if (staffList.length > 0) {
-        staffContext = staffList.map((s) => ({
-          id: s.id,
-          name: s.name,
-          phone: s.phone,
-          roleLabel: s.roleLabel,
-          shift: s.shift || "all_day",
-          status: s.status,
-        }));
-      }
-    } catch {
-      // Nếu localStorage không available (SSR edge case), bỏ qua
-    }
-
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -71,7 +50,6 @@ export function useChat(customerContext?: CustomerContext | null) {
           message: text,
           history: historyRef.current.slice(0, -1), // Không gửi tin nhắn hiện tại
           customerContext: customerContextRef.current ?? undefined,
-          staffContext,
         }),
       });
 

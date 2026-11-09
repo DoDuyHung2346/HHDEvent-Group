@@ -19,10 +19,38 @@ export function getStageEstimate(message: string, history: ChatTurn[] = []): Cha
   // Không để phép tính cũ trong history chiếm quyền xử lý một câu mới không
   // hề hỏi về sân khấu/thảm (ví dụ câu hỏi xin số điện thoại chuyên viên).
   if (!/(sân khấu|san khau|thảm đỏ|tham do)/i.test(normalized)) return null;
+  const hasStage = /(sân khấu|san khau)/i.test(normalized);
+  const hasCarpet = /(thảm đỏ|tham do)/i.test(normalized);
   const priorUserText = history.filter((turn) => turn.role === "user").map((turn) => turn.content).reverse().join(" ").toLowerCase();
   const stageArea = getAreaAfterLabel(normalized, "(?:sân khấu|san khau)") ?? getAreaAfterLabel(priorUserText, "(?:sân khấu|san khau)");
   const carpetArea = getAreaAfterLabel(normalized, "(?:thảm đỏ|tham do)") ?? stageArea;
-  if (!stageArea && !carpetArea) return null;
+  const format = (value: number) => new Intl.NumberFormat("vi-VN").format(value) + " VNĐ";
+
+  // Câu hỏi chưa có diện tích vẫn có thể trả lời đúng bằng đơn giá trong
+  // catalog. Không để nó rơi sang luồng báo giá sự kiện theo số khách.
+  if (!stageArea && !carpetArea) {
+    const lines = ["Đơn giá hạ tầng tham khảo theo bảng giá:"];
+    if (hasStage) lines.push(`- Mặt sàn sân khấu: ${format(STAGE_FLOOR_MIN)} – ${format(STAGE_FLOOR_MAX)}/m².`);
+    if (hasCarpet) lines.push(`- Thảm đỏ: ${format(STAGE_CARPET_PER_M2)}/m².`);
+    if (hasStage && hasCarpet) lines.push(`- Nếu thảm đỏ phủ toàn bộ mặt sàn, tổng phần sàn và thảm là ${format(STAGE_FLOOR_MIN + STAGE_CARPET_PER_M2)} – ${format(STAGE_FLOOR_MAX + STAGE_CARPET_PER_M2)}/m².`);
+
+    return {
+      answer: `${lines.join("\n")}\n\nAnh/chị cho em biết diện tích sân khấu và diện tích thảm đỏ cần phủ (m²); em sẽ tính ngay tổng chi phí tham khảo.`,
+      options: [
+        { id: "stage-area-50", label: "Tính cho sân khấu 50 m²", action: "ask", payload: "Sân khấu 50m2, thảm đỏ 50m2 giá bao nhiêu?" },
+        { id: "stage-area-custom", label: "Nhập diện tích để tính", action: "ask", payload: "Sân khấu ...m2, thảm đỏ ...m2 giá bao nhiêu?" },
+      ],
+      related_questions: [
+        "Sân khấu 50m², thảm đỏ 50m² giá bao nhiêu?",
+        "Sân khấu 100m², thảm đỏ 50m² giá bao nhiêu?",
+        "Chi phí màn hình LED cho sân khấu được tính thế nào?",
+      ],
+      needs_booking: false,
+      needs_requirements: false,
+      matched_faq_ids: ["stage-price-catalog"],
+      source: "ai",
+    };
+  }
   const carpetM2 = carpetArea ?? stageArea;
   if (!carpetM2) return null;
 
@@ -30,7 +58,6 @@ export function getStageEstimate(message: string, history: ChatTurn[] = []): Cha
   const floorMin = (stageArea ?? 0) * STAGE_FLOOR_MIN;
   const floorMax = (stageArea ?? 0) * STAGE_FLOOR_MAX;
   const carpet = carpetM2 * STAGE_CARPET_PER_M2;
-  const format = (value: number) => new Intl.NumberFormat("vi-VN").format(value) + " VNĐ";
   const stageLine = stageArea ? `- Mặt sàn sân khấu ${stageArea} m²: ${format(floorMin)} – ${format(floorMax)} (${format(STAGE_FLOOR_MIN)} – ${format(STAGE_FLOOR_MAX)}/m²).\n` : "";
 
   return {
