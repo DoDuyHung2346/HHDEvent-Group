@@ -7,6 +7,10 @@ const backendUrl =
 /** Returns diagnostics only. API keys and tokens are never returned. */
 export async function GET() {
   let backend: Record<string, unknown> = { reachable: false };
+  let usage: Record<string, unknown> = {
+    available: false,
+    error: "Chưa kiểm tra thống kê token.",
+  };
 
   try {
     const response = await fetch(`${backendUrl}/api/health`, {
@@ -29,10 +33,37 @@ export async function GET() {
     };
   }
 
+  // Token được backend ghi theo từng trace. Gọi qua server-side route để token
+  // quản trị không bao giờ được gửi xuống trình duyệt.
+  if (backend.reachable) {
+    try {
+      const adminToken = process.env.ADMIN_TOKEN;
+      const metricsResponse = await fetch(`${backendUrl}/api/admin/metrics?days=30`, {
+        cache: "no-store",
+        headers: adminToken ? { Authorization: `Bearer ${adminToken}` } : undefined,
+        signal: AbortSignal.timeout(3_000),
+      });
+      if (metricsResponse.ok) {
+        const metrics = await metricsResponse.json();
+        usage = {
+          available: true,
+          ...(metrics.llm_usage ?? {}),
+          kb_health: metrics.kb_health ?? {},
+          cost: metrics.cost ?? {},
+        };
+      } else {
+        usage = { available: false, error: `Không tải được thống kê token (HTTP ${metricsResponse.status}).` };
+      }
+    } catch {
+      usage = { available: false, error: "Không thể kết nối endpoint thống kê token." };
+    }
+  }
+
   return NextResponse.json({
     checked_at: new Date().toISOString(),
     backend_url: backendUrl,
     fallback: getAISafeStatus(),
     backend,
+    usage,
   });
 }

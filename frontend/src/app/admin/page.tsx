@@ -45,6 +45,24 @@ type AIStatus = {
     api_key_configured?: boolean;
   };
   error?: string;
+  usage?: {
+    available?: boolean;
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+    usage_records?: number;
+    period_days?: number;
+    quota_note?: string;
+    error?: string;
+    kb_health?: {
+      active_documents?: number;
+      active_chunks?: number;
+      database_backend?: string;
+      file_storage?: string;
+      vector_store?: string;
+      persistent?: boolean;
+    };
+  };
 };
 
 export default function AdminDashboardPage() {
@@ -1482,7 +1500,8 @@ export default function AdminDashboardPage() {
               </div>
 
               {aiStatus && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div className="space-y-3 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <div className={`p-4 rounded-xl border ${aiStatus.backend?.reachable ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
                     <p className="font-bold text-slate-800">RAG Backend</p>
                     <p className="mt-1 text-slate-600">{aiStatus.backend?.reachable ? `Đang hoạt động (${aiStatus.backend.status || "ok"})` : aiStatus.backend?.error || "Chưa kết nối"}</p>
@@ -1493,6 +1512,41 @@ export default function AdminDashboardPage() {
                     <p className="mt-1 text-slate-600">Provider: {aiStatus.fallback?.provider || "Không xác định"}</p>
                     <p className="text-slate-600">Model: {aiStatus.fallback?.model || "Không xác định"}</p>
                     <p className="mt-2 font-semibold text-slate-700">API key: {aiStatus.fallback?.api_key_configured ? "Đã cấu hình" : "Chưa cấu hình"}</p>
+                  </div>
+                  </div>
+
+                  <div className={`p-4 rounded-xl border ${aiStatus.usage?.available ? "bg-violet-50 border-violet-200" : "bg-slate-50 border-slate-200"}`}>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div>
+                        <p className="font-bold text-slate-800">Mức sử dụng AI</p>
+                        <p className="mt-1 text-slate-600">Token được nhà cung cấp trả về trong {aiStatus.usage?.period_days || 30} ngày gần nhất.</p>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-[10px] font-bold ${aiStatus.usage?.available ? "bg-violet-100 text-violet-700" : "bg-slate-200 text-slate-600"}`}>
+                        {aiStatus.usage?.available ? "Đang ghi nhận" : "Chưa có dữ liệu"}
+                      </span>
+                    </div>
+                    {aiStatus.usage?.available ? (
+                      <>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3">
+                          <div className="rounded-lg bg-white border border-violet-100 p-2.5"><p className="text-slate-500">Input token</p><p className="mt-1 font-bold text-slate-900">{(aiStatus.usage.input_tokens || 0).toLocaleString("vi-VN")}</p></div>
+                          <div className="rounded-lg bg-white border border-violet-100 p-2.5"><p className="text-slate-500">Output token</p><p className="mt-1 font-bold text-slate-900">{(aiStatus.usage.output_tokens || 0).toLocaleString("vi-VN")}</p></div>
+                          <div className="rounded-lg bg-white border border-violet-100 p-2.5"><p className="text-slate-500">Tổng token</p><p className="mt-1 font-bold text-slate-900">{(aiStatus.usage.total_tokens || 0).toLocaleString("vi-VN")}</p></div>
+                          <div className="rounded-lg bg-white border border-violet-100 p-2.5"><p className="text-slate-500">Lượt có usage</p><p className="mt-1 font-bold text-slate-900">{(aiStatus.usage.usage_records || 0).toLocaleString("vi-VN")}</p></div>
+                        </div>
+                        <p className="mt-3 text-amber-700">{aiStatus.usage.quota_note}</p>
+                      </>
+                    ) : <p className="mt-3 text-slate-600">{aiStatus.usage?.error || "Hãy kiểm tra backend để tải thống kê."}</p>}
+                  </div>
+
+                  <div className={`p-4 rounded-xl border ${aiStatus.usage?.kb_health?.persistent ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200"}`}>
+                    <p className="font-bold text-slate-800">Lưu trữ kho RAG</p>
+                    {aiStatus.usage?.kb_health ? (
+                      <>
+                        <p className="mt-1 text-slate-600">{aiStatus.usage.kb_health.active_documents || 0} tài liệu đang hoạt động • {(aiStatus.usage.kb_health.active_chunks || 0).toLocaleString("vi-VN")} chunks đã index.</p>
+                        <p className="mt-2 text-slate-700">{aiStatus.usage.kb_health.database_backend} • {aiStatus.usage.kb_health.file_storage} • {aiStatus.usage.kb_health.vector_store}</p>
+                        <p className="mt-1 font-semibold text-slate-700">{aiStatus.usage.kb_health.persistent ? "Dữ liệu RAG được lưu bền vững, không mất khi khởi động lại." : "RAG đang dùng lưu trữ cục bộ; cần cấu hình cloud để dữ liệu bền vững."}</p>
+                      </>
+                    ) : <p className="mt-1 text-slate-600">Chưa có dữ liệu trạng thái RAG.</p>}
                   </div>
                 </div>
               )}
