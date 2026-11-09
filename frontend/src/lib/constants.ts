@@ -48,6 +48,9 @@ export const RESCHEDULE_KEYWORDS = [
   "đổi hẹn",
   "thay lịch",
   "dời hẹn",
+  "chuyển lịch",
+  "chuyển sang",
+  "chuyển qua",
 ];
 export const URGENT_KEYWORDS = [
   "gấp",

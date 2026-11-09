@@ -7,18 +7,34 @@ export type RescheduleResult =
   | { status: "needs_form"; reason: string };
 
 export function isRescheduleRequest(message: string): boolean {
-  return /(đổi\s*(lịch|sang)|dời\s*(lịch|sang)|thay\s*(lịch|đổi)|reschedule)/i.test(message);
+  return /(?:đổi\s*(?:lịch|sang)|dời\s*(?:lịch|sang)|thay\s*(?:lịch|đổi)|chuyển\s*(?:lịch|sang|qua)|reschedule)/i.test(message);
 }
 
-function parseTarget(message: string): { date?: string; time?: string; displayDate?: string } {
+export function parseRescheduleTarget(message: string): { date?: string; time?: string; displayDate?: string } {
   const timeMatch = message.match(/\b(\d{1,2})\s*(?::|h|giờ)\s*(\d{2})?\b/i);
   const dateMatch = message.match(/(?:ngày\s*)?(\d{1,2})\s*[\/-]\s*(\d{1,2})(?:\s*[\/-]\s*(\d{4}))?/i);
   const time = timeMatch
     ? `${String(Number(timeMatch[1])).padStart(2, "0")}:${String(Number(timeMatch[2] ?? "0")).padStart(2, "0")}`
     : undefined;
-  if (!dateMatch) return { time };
-
   const now = new Date();
+  if (!dateMatch) {
+    // “14h chiều mai” is a complete, unambiguous reschedule target. Resolve
+    // it in the user's local timezone rather than sending them to a form.
+    if (/(?:ngày\s*)?mai\b/i.test(message)) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const year = tomorrow.getFullYear();
+      const month = tomorrow.getMonth() + 1;
+      const day = tomorrow.getDate();
+      return {
+        date: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
+        displayDate: `${String(day).padStart(2, "0")}/${String(month).padStart(2, "0")}/${year}`,
+        time,
+      };
+    }
+    return { time };
+  }
+
   const year = dateMatch[3] ? Number(dateMatch[3]) : now.getFullYear();
   const month = Number(dateMatch[2]);
   const day = Number(dateMatch[1]);
@@ -31,7 +47,7 @@ function parseTarget(message: string): { date?: string; time?: string; displayDa
 
 export async function rescheduleLatestBooking(phone: string | null | undefined, message: string): Promise<RescheduleResult> {
   if (!phone) return { status: "needs_form", reason: "Cần số điện thoại để tra cứu lịch hẹn." };
-  const target = parseTarget(message);
+  const target = parseRescheduleTarget(message);
   if (!target.date || !target.time) return { status: "needs_form", reason: "Cần đủ ngày và giờ mới để đổi lịch." };
   const [year, month, day] = target.date.split("-").map(Number);
   const calendarDate = new Date(year, month - 1, day);

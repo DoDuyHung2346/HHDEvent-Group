@@ -26,7 +26,7 @@ function detectIntent(
   const lower = message.toLowerCase();
   const requestsReschedule = RESCHEDULE_KEYWORDS.some((kw) => lower.includes(kw.toLowerCase()));
   const discussesEventPolicy = /(chính sách|điều khoản|hủy\s*(?:sự kiện|hợp đồng)|hoàn\s*(?:cọc|tiền)|phí\s*đổi\s*lịch)/i.test(message);
-  const namesAppointment = /(lịch\s*hẹn|lịch\s*tư\s*vấn|cuộc\s*hẹn|mã\s*lịch|khung\s*giờ|đổi\s*sang|chuyển\s*sang)/i.test(message);
+  const namesAppointment = /(lịch\s*hẹn|lịch\s*tư\s*vấn|cuộc\s*hẹn|mã\s*lịch|khung\s*giờ|đổi\s*sang|chuyển\s*(?:sang|qua))/i.test(message);
   const makesPersonalRequest = /(?:tôi|mình|em|anh|chị)\s*(?:muốn|cần|xin|định)?\s*đổi\s*lịch/i.test(message);
   const recentAppointmentContext = history.slice(-4).some(
     (turn) => turn.role === "user" && /(đổi\s*lịch|lịch\s*hẹn|lịch\s*tư\s*vấn)/i.test(turn.content)
@@ -87,11 +87,6 @@ export async function POST(req: NextRequest) {
   // Lời chào là conversational intent, không cần truy xuất FAQ.
   if (isGreeting(message)) {
     return NextResponse.json({ ...getGreetingResponse(), intent: "normal" as const });
-  }
-
-  // Yêu cầu hẹn có giờ/ngày luôn ưu tiên hơn yêu cầu xin thông tin liên hệ.
-  if (isSchedulingRequest(message)) {
-    return NextResponse.json({ ...getBookingFormResponse(), intent: "normal" as const });
   }
 
   // Liên hệ là intent độc lập, không để giá sân khấu ở history lấn át.
@@ -155,6 +150,13 @@ export async function POST(req: NextRequest) {
       source: "mock" as const,
       intent: "reschedule",
     });
+  }
+
+  // Yêu cầu hẹn có giờ/ngày luôn ưu tiên hơn yêu cầu xin thông tin liên hệ.
+  // Reschedule must be handled first: “chuyển qua 14h chiều mai” is not a
+  // request to create a second appointment.
+  if (isSchedulingRequest(message)) {
+    return NextResponse.json({ ...getBookingFormResponse(), intent: "normal" as const });
   }
 
   // Nếu là liên hệ gấp → trả urgent response
